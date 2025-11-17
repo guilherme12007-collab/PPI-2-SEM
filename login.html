@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(to bottom, #133824 0%, #125c2b 100%);
+      padding: 0 1rem;
+      font-family: 'Segoe UI', Arial, sans-serif;
+    }
+
+    .login-container {
+      width: 100%;
+      max-width: 420px;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+      padding: 3rem 2rem;
+    }
+
+    .login-header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    .login-header h1 {
+      font-size: 2.2rem;
+      color: #125c2b;
+      margin: 0 0 0.5rem 0;
+      font-weight: 700;
+    }
+
+    .login-header p {
+      color: #666;
+      font-size: 0.95rem;
+      margin: 0;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 0.5rem;
+      font-size: 0.95rem;
+    }
+
+    .form-group input[type="email"],
+    .form-group input[type="password"] {
+      width: 100%;
+      padding: 0.75rem;
+      border: 2px solid #e5e7eb;
+      border-radius: 6px;
+      font-size: 1rem;
+      transition: border-color 0.3s, box-shadow 0.3s;
+      box-sizing: border-box;
+    }
+
+    .form-group input[type="email"]:focus,
+    .form-group input[type="password"]:focus {
+      outline: none;
+      border-color: #125c2b;
+      box-shadow: 0 0 0 3px rgba(18, 92, 43, 0.1);
+    }
+
+    .radio-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .radio-group label {
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 0.75rem;
+    }
+
+    .radio-options {
+      display: flex;
+      gap: 2rem;
+      margin-top: 0.75rem;
+    }
+
+    .radio-options label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 500;
+      margin: 0;
+      font-size: 0.95rem;
+      cursor: pointer;
+    }
+
+    .radio-options input[type="radio"] {
+      cursor: pointer;
+      width: 18px;
+      height: 18px;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .btn-login {
+      flex: 1;
+      padding: 0.85rem;
+      background: linear-gradient(135deg, #125c2b 0%, #0d4620 100%);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 4px 12px rgba(18, 92, 43, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .btn-login:hover {
+      background: linear-gradient(135deg, #0d4620 0%, #092f16 100%);
+      box-shadow: 0 6px 16px rgba(18, 92, 43, 0.4);
+      transform: translateY(-2px);
+    }
+
+    .btn-login:active {
+      transform: translateY(0);
+    }
+
+    .btn-login i {
+      font-size: 1.1rem;
+    }
+
+    .signup-section {
+      text-align: center;
+      padding: 1.5rem;
+      background: #f8fafb;
+      border-radius: 8px;
+      border: 1px solid #e5e7eb;
+    }
+
+    .signup-section p {
+      margin: 0;
+      color: #555;
+      font-size: 0.95rem;
+    }
+
+    .btn-signup {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: linear-gradient(135deg, #125c2b 0%, #0d4620 100%);
+      color: white;
+      text-decoration: none;
+      padding: 0.65rem 1.5rem;
+      border-radius: 6px;
+      font-weight: 700;
+      margin-top: 0.8rem;
+      transition: all 0.3s;
+      box-shadow: 0 4px 12px rgba(18, 92, 43, 0.3);
+      cursor: pointer;
+      border: none;
+      font-size: 1rem;
+      justify-content: center;
+    }
+
+    .btn-signup:hover {
+      background: linear-gradient(135deg, #0d4620 0%, #092f16 100%);
+      box-shadow: 0 6px 16px rgba(18, 92, 43, 0.4);
+      transform: translateY(-2px);
+      text-decoration: none;
+    }
+
+    .btn-signup:active {
+      transform: translateY(0);
+    }
+
+    .btn-signup i {
+      font-size: 1.1rem;
+    }
+
+    .login-nav {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="login-container">
+      <div class="login-header">
+        <h1>Login</h1>
+        <p>Acesse sua conta para continuar</p>
+      </div>
+
+      <form onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label for="email">E-mail</label>
+          <input type="email" id="email" name="email" placeholder="seu@email.com" required>
+        </div>
+
+        <div class="form-group">
+          <label for="password">Senha</label>
+          <input type="password" id="password" name="password" placeholder="Sua senha" required>
+        </div>
+
+        <div class="radio-group">
+          <label>Tipo de Usuário</label>
+          <div class="radio-options">
+            <label>
+              <input type="radio" name="tipo" value="admin" required>
+              <span>Administrador</span>
+            </label>
+            <label>
+              <input type="radio" name="tipo" value="participante" required checked>
+              <span>Participante</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="button-group">
+          <button type="submit" class="btn-login">
+            <i class="fa-solid fa-door-open"></i>
+            <span>Entrar</span>
+          </button>
+        </div>
+      </form>
+
+      <div class="signup-section">
+        <p>Não tem conta?</p>
+        <a href="registro.html" class="btn-signup">
+          <i class="fa-solid fa-user-plus"></i>
+          <span>Registrar Agora</span>
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    function handleLogin(event) {
+      event.preventDefault();
+      var tipo = document.querySelector('input[name="tipo"]:checked').value;
+      if(tipo === 'admin') {
+        window.location.href = 'index.html';
+      } else {
+        window.location.href = 'participante-dashboard.html';
+      }
+    }
+  </script>
+</body>
+</html>

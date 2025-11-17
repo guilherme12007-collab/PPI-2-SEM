@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard do Administrador</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(to bottom, #133824 0%, #125c2b 100%);
+      min-height: 100vh;
+      color: #fff;
+    }
+
+    nav {
+      background: rgba(18, 92, 43, 0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 2px solid rgba(18, 92, 43, 0.5);
+      padding: 1rem 2rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    nav .nav-links {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      gap: 2rem;
+    }
+
+    nav a {
+      color: #fff;
+      text-decoration: none;
+      font-weight: 600;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    nav a:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: translateY(-2px);
+    }
+
+    main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+      min-height: calc(100vh - 80px);
+    }
+
+    .logo-section {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .logo_principal {
+      width: 120px;
+      height: 140px;
+      object-fit: contain;
+      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+    }
+
+    main h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #fff;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      margin: 0;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      padding: 2rem;
+      border-left: 5px solid #125c2b;
+      transition: all 0.3s;
+      color: #333;
+    }
+
+    .card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 12px 40px rgba(18, 92, 43, 0.3);
+    }
+
+    .card h2 {
+      font-size: 1.2rem;
+      color: #125c2b;
+      margin-bottom: 1rem;
+      font-weight: 700;
+    }
+
+    .card h3 {
+      font-size: 1rem;
+      color: #125c2b;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .card .text-2xl {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #125c2b;
+      margin-bottom: 0.5rem;
+    }
+
+    .card p {
+      color: #666;
+      font-size: 0.95rem;
+      margin: 0.5rem 0;
+    }
+
+    .card .text-muted {
+      color: #999;
+      font-size: 0.9rem;
+    }
+
+    .card strong {
+      color: #125c2b;
+    }
+
+    .card ul {
+      list-style: none;
+      padding: 0;
+      margin: 1rem 0 0 0;
+    }
+
+    .card ul li {
+      padding: 0.5rem 0;
+      border-bottom: 1px solid #eee;
+      color: #555;
+      font-size: 0.95rem;
+    }
+
+    .card ul li:last-child {
+      border-bottom: none;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+      border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+      padding-bottom: 0;
+    }
+
+    .tab {
+      background: transparent;
+      color: rgba(255, 255, 255, 0.7);
+      border: none;
+      border-bottom: 3px solid transparent;
+      padding: 0.75rem 1.5rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-decoration: none;
+    }
+
+    .tab:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.05);
+      transform: translateY(-2px);
+    }
+
+    .tab.tab-active {
+      color: #fff;
+      border-bottom-color: #22c55e;
+      background: rgba(34, 197, 94, 0.1);
+      box-shadow: 0 4px 12px rgba(34, 197, 94, 0.2);
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 0.7rem 1.5rem;
+      border-radius: 6px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      transition: all 0.3s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+      font-size: 0.95rem;
+      background: linear-gradient(135deg, #125c2b 0%, #0d4620 100%);
+      color: white;
+      box-shadow: 0 4px 12px rgba(18, 92, 43, 0.3);
+    }
+
+    .btn:hover {
+      background: linear-gradient(135deg, #0d4620 0%, #092f16 100%);
+      box-shadow: 0 6px 16px rgba(18, 92, 43, 0.4);
+      transform: translateY(-2px);
+      text-decoration: none;
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    /* Botão específico para emissão/baixa de certificados
+       - cor levemente cinza mais escura que o background do card
+       - destaque com borda e sombra sutil
+    */
+    .btn-certificado {
+      background: #eef0f2; /* um pouco mais cinza que o card branco */
+      color: #1f2937; /* texto escuro para contraste */
+      border: 1px solid #d1d5db;
+      box-shadow: 0 6px 18px rgba(31,41,55,0.08);
+      padding: 0.45rem 0.9rem;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+      font-size: 0.9rem;
+    }
+
+    .btn-certificado:hover {
+      background: #e6e9ec;
+      transform: translateY(-3px);
+      box-shadow: 0 10px 24px rgba(31,41,55,0.12);
+    }
+
+    .btn i {
+      font-size: 1rem;
+    }
+
+    .mt-2 {
+      margin-top: 0.5rem;
+    }
+
+    @media (max-width: 768px) {
+      nav .nav-links {
+        flex-wrap: wrap;
+        gap: 1rem;
+      }
+
+      main {
+        padding: 1rem;
+      }
+
+      main h1 {
+        font-size: 1.8rem;
+      }
+
+      .grid-3 {
+        grid-template-columns: 1fr;
+      }
+
+      .tabs {
+        flex-direction: column;
+        gap: 0;
+        border-bottom: none;
+      }
+
+      .tab {
+        border-bottom: 3px solid transparent;
+        border-right: 3px solid transparent;
+        padding: 0.75rem;
+      }
+
+      .tab.tab-active {
+        border-bottom: none;
+        border-right-color: #22c55e;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="nav-links">
+      <a href="index.html"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+      <a href="eventos.html"><i class="fa-solid fa-calendar-days"></i> Eventos</a>
+      <a href="login.html"><i class="fa-solid fa-sign-out-alt"></i> Sair</a>
+    </div>
+  </nav>
+
+  <main>
+    <div class="logo-section">
+      <img src="img/logo_iffar-removebg-preview.png" alt="iff" class="logo_principal">
+      <h1><i class="fa-solid fa-shield"></i> Dashboard do Administrador</h1>
+    </div>
+    <div class="tabs">
+      <button class="tab tab-active" data-tab="resumo" onclick="showTabDash('resumo')">
+        <i class="fa-solid fa-home"></i> Resumo
+      </button>
+      <button class="tab" data-tab="atuais" onclick="showTabDash('atuais')">
+        <i class="fa-solid fa-play-circle"></i> Eventos cadastrados
+      </button>
+      <button class="tab" data-tab="atividade" onclick="showTabDash('atividade')">
+        <i class="fa-solid fa-play-circle"></i> Emitir certificados
+      </button>
+    </div>
+
+    <div id="tabdash-resumo">
+      <div class="card">
+        <h2><i class="fa-solid fa-chart-pie"></i> Visão Geral</h2>
+        <p>Bem-vindo ao painel de administração do sistema de monitoramento de eventos.</p>
+        <p>Aqui você pode gerenciar eventos, participantes e visualizar estatísticas de presença.</p>
+        <p>Use a navegação acima para acessar as diferentes seções do sistema.</p>
+        <div class="btn-group" style="margin-top: 1.5rem;">
+          <a href="cadastrar-evento.html" class="btn">
+            <i class="fa-solid fa-plus"></i> Criar Novo Evento
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div id="tabdash-atuais" style="display:none;">
+      <div class="grid-3">
+        <div class="card">
+          <h2><i class="fa-solid fa-play-circle"></i> Eventos em Andamento</h2>
+          <div class="text-2xl">1</div>
+          <p class="text-muted">Workshop de Desenvolvimento Web</p>
+          <button class="btn mt-2">
+            <i class="fa-solid fa-eye"></i> Ver Detalhes
+          </button>
+        </div>
+        <div class="card">
+          <h2><i class="fa-solid fa-clock"></i> Próximos Eventos</h2>
+          <div class="text-2xl">2</div>
+          <p class="text-muted">Conferência de Tecnologia, Hackathon 2025</p>
+          <button class="btn mt-2">
+            <i class="fa-solid fa-list"></i> Ver Todos
+          </button>
+        </div>
+        <div class="card">
+          <h2><i class="fa-solid fa-circle-notch"></i> Participantes Ativos</h2>
+          <div class="text-2xl">35</div>
+          <p class="text-muted">Participando agora</p>
+        </div>
+      </div>
+    </div>
+
+    <div id="tabdash-recentes" style="display:none;">
+      <div class="card">
+        <h2><i class="fa-solid fa-history"></i> Eventos Recentes</h2>
+        <ul>
+          <li><strong>Workshop de Desenvolvimento Web</strong> - 10/06/2025</li>
+          <li><strong>Conferência de Tecnologia</strong> - 20/07/2025</li>
+        </ul>
+      </div>
+    </div>
+
+    <div id="tabdash-atividade" style="display:none;">
+      <div class="card">
+        <h2><i class="fa-solid fa-activity"></i> Certificados</h2>
+        <ul>
+          <li><strong>Workshop de Desenvolvimento Web:</strong>
+            <button class="btn-certificado">Certificado</button>
+            10/12/2025
+          </li>
+          <li><strong>Workshop de Desenvolvimento Web:</strong>
+            <button class="btn-certificado">Certificado</button>
+            10/12/2025
+          </li>
+          <li><strong>Workshop de Desenvolvimento Web:</strong>
+            <button class="btn-certificado">Certificado</button>
+            10/12/2025
+          </li>
+        </ul>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    function showTabDash(tab) {
+      var tabs = ['resumo','atuais','recentes','atividade'];
+      tabs.forEach(function(t) {
+        var el = document.getElementById('tabdash-' + t);
+        if (el) el.style.display = (t === tab) ? '' : 'none';
+      });
+
+      var btns = document.querySelectorAll('.tabs .tab');
+      btns.forEach(function(btn) {
+        if (btn.dataset && btn.dataset.tab === tab) {
+          btn.classList.add('tab-active');
+        } else {
+          btn.classList.remove('tab-active');
+        }
+      });
+    }
+  </script>
+</body>
+</html>
