@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <title>Meus Eventos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        header {
+            background-color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+            color: #2d5f3f;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 2px;
+            padding: 4px;
+        }
+
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .btn-settings {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.5rem;
+            color: #666;
+            font-size: 1.2rem;
+            transition: color 0.2s;
+        }
+
+        .btn-settings:hover {
+            color: #333;
+        }
+
+        .logout {
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            padding: 0.6rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: background-color 0.2s;
+        }
+
+        .logout:hover {
+            background-color: #45a049;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            color: #2d5f3f;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 0.95rem;
+        }
+
+        .events-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 2rem;
+        }
+
+        .event-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .event-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        }
+
+        .event-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .event-title {
+            font-size: 1.3rem;
+            color: #2d5f3f;
+            font-weight: 600;
+            flex: 1;
+        }
+
+        .event-badge {
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .badge-andamento {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .badge-breve {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .badge-finalizado {
+            background-color: #e2e3e5;
+            color: #383d41;
+        }
+
+        .event-description {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.5;
+        }
+
+        .event-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            color: #555;
+            font-size: 0.9rem;
+        }
+
+        .info-icon {
+            width: 18px;
+            height: 18px;
+            color: #666;
+        }
+
+        .event-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .btn {
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+        }
+
+        .btn-primary {
+            background-color: #4caf50;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #45a049;
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: #666;
+            border: 1px solid #ddd;
+        }
+
+        .btn-secondary:hover {
+            background-color: #f5f5f5;
+        }
+
+        .check-in-note {
+            color: #888;
+            font-size: 0.85rem;
+            text-align: center;
+            padding: 1rem;
+        }
+
+        .presence-confirmed {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            color: #4caf50;
+            font-size: 0.9rem;
+            padding: 0.8rem;
+            background-color: #f1f8f4;
+            border-radius: 6px;
+        }
+
+        .dias-faltas {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            color: #af4c4c;
+            font-size: 0.9rem;
+            padding: 0.8rem;
+            background-color: #fef5f5;
+            border-radius: 6px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 10;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            width: 90%;
+            max-width: 400px;
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .modal-content h2 {
+            color: #2d5f3f;
+            margin-bottom: 1rem;
+        }
+
+        .modal-content p {
+            color: #666;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .modal-btn {
+            padding: 0.6rem 1.5rem;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .modal-btn-confirm {
+            background-color: #4caf50;
+            color: white;
+        }
+
+        .modal-btn-confirm:hover {
+            background-color: #45a049;
+        }
+
+        .modal-btn-cancel {
+            background-color: #e0e0e0;
+            color: #333;
+        }
+
+        .modal-btn-cancel:hover {
+            background-color: #d0d0d0;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <div class="logo-icon">
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <span>Instituto Federal</span>
+        </div>
+        <div class="header-actions">
+            <button class="btn-settings" onclick="openSettingsModal()">⚙</button>
+            <button class="logout" onclick="openLogoutModal()">
+                <i class="fa-solid fa-sign-out-alt"></i>
+                Logout
+            </button>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="header">
+            <h1>Meus Eventos</h1>
+            <p>Gerencie suas inscrições e controle de presença</p>
+        </div>
+
+        <div class="events-grid">
+            <!-- Evento 1 -->
+            <div class="event-card">
+                <div class="event-header">
+                    <h2 class="event-title">Semana de Tecnologia 2024</h2>
+                    <span class="event-badge badge-andamento">Em andamento</span>
+                </div>
+                <p class="event-description">Palestras e workshops sobre tecnologias emergentes</p>
+                <div class="event-info">
+                    <div class="info-item">
+                        <span class="info-icon">
+                            <i class="fa-solid fa-calendar"></i>
+                        </span>
+                        <span>15-20 de Maio, 2024</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-icon">
+                            <i class="fa-solid fa-location-dot"></i>
+                        </span>
+                        <span>Campus Panambi</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-icon">
+                            <i class="fa-solid fa-user"></i>
+                        </span>
+                        <span>150 inscritos</span>
+                    </div>
+                </div>
+                <div class="event-actions">
+                    <button class="btn btn-primary" onclick="openCheckinModal('Semana de Tecnologia 2024', 'check-in')">
+                        ↗ Fazer Check-in
+                    </button>
+                    <button class="btn btn-secondary" onclick="openCheckinModal('Semana de Tecnologia 2024', 'check-out')">
+                        ↙ Fazer Check-out
+                    </button>
+                </div>
+            </div>
+
+            <!-- Evento 2 -->
+            <div class="event-card">
+                <div class="event-header">
+                    <h2 class="event-title">Workshop de Inteligência Artificial</h2>
+                    <span class="event-badge badge-breve">Em breve</span>
+                </div>
+                <p class="event-description">Introdução prática ao desenvolvimento com IA</p>
+                <div class="event-info">
+                    <div class="info-item">
+                        <span class="info-icon">
+                            <i class="fa-solid fa-calendar"></i>
+                        </span>
+                        <span>10 de Junho, 2024</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-icon">
+                            <i class="fa-solid fa-location-dot"></i>
+                        </span>
+                        <span>Laboratório de Informática</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-icon">
+                            <i class="fa-solid fa-user"></i>
+                        </span>
+                        <span>45 inscritos</span>
+                    </div>
+                </div>
+                <div class="check-in-note">
+                    Check-in disponível durante o evento
+                </div>
+            </div>
+
+            <!-- Evento 3 -->
+            <div class="event-card">
+                <div class="event-header">
+                    <h2 class="event-title">Hackathon IFFar 2024</h2>
+                    <span class="event-badge badge-finalizado">Finalizado</span>
+                </div>
+                <p class="event-description">Competição de programação de 24 horas</p>
+                <div class="event-info">
+                    <div class="info-item">
+                        <span class="info-icon">
+                            <i class="fa-solid fa-calendar"></i>
+                        </span>
+                        <span>5-6 de Abril, 2024</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-icon">
+                            <i class="fa-solid fa-location-dot"></i>
+                        </span>
+                        <span>Campus Principal</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-icon">
+                            <i class="fa-solid fa-user"></i>
+                        </span>
+                        <span>80 inscritos</span>
+                    </div>
+                </div>
+                <div class="presence-confirmed">
+                    <i class="fa-solid fa-circle-check"></i>
+                    <span>Presença: Confirmada</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmação -->
+    <div id="modal" class="modal" onclick="closeModalOutside(event)">
+        <div class="modal-content">
+            <h2 id="modal-title">Confirmar Ação</h2>
+            <p id="modal-message">Deseja continuar?</p>
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-cancel" onclick="closeModal()">Cancelar</button>
+                <button class="modal-btn modal-btn-confirm" onclick="confirmAction()">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentAction = null;
+        let currentEvent = null;
+
+        function openCheckinModal(eventName, action) {
+            currentEvent = eventName;
+            currentAction = action;
+            const modal = document.getElementById('modal');
+            const title = document.getElementById('modal-title');
+            const message = document.getElementById('modal-message');
+            
+            if (action === 'check-in') {
+                title.textContent = 'Confirmar Check-in';
+                message.textContent = `Deseja fazer check-in no evento "${eventName}"?`;
+            } else {
+                title.textContent = 'Confirmar Check-out';
+                message.textContent = `Deseja fazer check-out do evento "${eventName}"?`;
+            }
+            
+            modal.classList.add('show');
+        }
+
+        function openLogoutModal() {
+            currentAction = 'logout';
+            const modal = document.getElementById('modal');
+            const title = document.getElementById('modal-title');
+            const message = document.getElementById('modal-message');
+            
+            title.textContent = 'Confirmar Logout';
+            message.textContent = 'Deseja realmente sair do sistema?';
+            
+            modal.classList.add('show');
+        }
+
+        function openSettingsModal() {
+            currentAction = 'settings';
+            const modal = document.getElementById('modal');
+            const title = document.getElementById('modal-title');
+            const message = document.getElementById('modal-message');
+            
+            title.textContent = 'Configurações';
+            message.textContent = 'Funcionalidade de configurações em desenvolvimento.';
+            
+            modal.classList.add('show');
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('modal');
+            modal.classList.remove('show');
+            currentAction = null;
+            currentEvent = null;
+        }
+
+        function closeModalOutside(event) {
+            if (event.target.id === 'modal') {
+                closeModal();
+            }
+        }
+
+        function confirmAction() {
+            if (currentAction === 'logout') {
+                window.location.href = 'registro.html';
+            } else if (currentAction === 'check-in') {
+                alert(`Check-in realizado com sucesso no evento "${currentEvent}"!`);
+                closeModal();
+            } else if (currentAction === 'check-out') {
+                alert(`Check-out realizado com sucesso no evento "${currentEvent}"!`);
+                closeModal();
+            } else if (currentAction === 'settings') {
+                closeModal();
+            }
+        }
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
