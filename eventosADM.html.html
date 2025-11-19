@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciar Eventos</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: #f6f6f6;
+            font-family: 'Inter', Arial, sans-serif;
+        }
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+        .sidebar {
+            width: 220px;
+            background: #fff;
+            border-right: 1px solid #e5e7eb;
+            padding: 32px 0 0 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .logo {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+        .logo img {
+            width: 48px;
+            margin-bottom: 8px;
+        }
+        .logo span {
+            font-weight: 600;
+            font-size: 15px;
+        }
+        .sidebar nav ul {
+            list-style: none;
+            padding: 0;
+            width: 100%;
+        }
+        .sidebar nav ul li {
+            margin-bottom: 8px;
+        }
+        .sidebar nav ul li a {
+            display: flex;
+            align-items: center;
+            padding: 10px 24px;
+            color: #333;
+            text-decoration: none;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+        .sidebar nav ul li.active a,
+        .sidebar nav ul li a:hover {
+            background: #22c55e;
+            color: #fff;
+        }
+        .main-content {
+            flex: 1;
+            padding: 0 40px;
+        }
+        .top-bar {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            padding: 24px 0 0 0;
+            gap: 16px;
+        }
+        .settings .icon {
+            font-size: 20px;
+            color: #6b7280;
+            margin-right: 8px;
+        }
+        .logout-btn {
+            background: #22c55e;
+            color: #fff;
+            border: none;
+            padding: 8px 24px;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .logout-btn:hover {
+            background: #16a34a;
+        }
+        .eventos-section {
+            margin-top: 24px;
+        }
+        .eventos-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 32px;
+        }
+        .eventos-header h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .eventos-header p {
+            color: #6b7280;
+            font-size: 0.95rem;
+            margin-bottom: 0;
+        }
+        .search-input {
+            flex: 1;
+            max-width: 320px;
+            padding: 10px 16px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            margin-left: 32px;
+            margin-right: 16px;
+            background: #fff;
+            font-size: 1rem;
+        }
+        .novo-evento-btn {
+            background: #22c55e;
+            color: #fff;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .novo-evento-btn:hover {
+            background: #16a34a;
+        }
+        .eventos-list {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+        .evento-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 24px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        }
+        .evento-info h2 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+        .evento-info p {
+            color: #6b7280;
+            font-size: 0.95rem;
+            margin-bottom: 8px;
+        }
+        .evento-info span {
+            color: #6b7280;
+            font-size: 0.93rem;
+        }
+        .evento-status {
+            font-size: 0.95rem;
+            font-weight: 500;
+            padding: 6px 18px;
+            border-radius: 12px;
+            margin-right: 24px;
+            min-width: 90px;
+            text-align: center;
+        }
+        .evento-status.ativo {
+            background: #22c55e;
+            color: #fff;
+        }
+        .evento-status.programado {
+            background: #e5e7eb;
+            color: #333;
+        }
+        .evento-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .editar-btn, .excluir-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 18px;
+            font-size: 0.97rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .editar-btn {
+            background: #f3f4f6;
+            color: #333;
+            border: 1px solid #e5e7eb;
+        }
+        .editar-btn:hover {
+            background: #e5e7eb;
+        }
+        .excluir-btn {
+            background: #fee2e2;
+            color: #ef4444;
+            border: 1px solid #fecaca;
+        }
+        .excluir-btn:hover {
+            background: #fecaca;
+        }
+        @media (max-width: 900px) {
+            .container {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                flex-direction: row;
+                justify-content: space-between;
+                padding: 16px;
+            }
+            .main-content {
+                padding: 0 12px;
+            }
+            .eventos-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="logo">
+                <img src="logo_if.png" alt="Logo IF">
+                <span>Sistema de Eventos</span>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Dashboard</a></li>
+                    <li class="active"><a href="">Eventos</a></li>
+                    <li><a href="#">Inscritos</a></li>
+                    <li><a href="#">Presença</a></li>
+                    <li><a href="#">Certificados</a></li>
+                    <li><a href="#">Configurações</a></li>
+                </ul>
+            </nav>
+        </aside>
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="settings">
+                    <span class="icon">&#9881;</span>
+                </div>
+                <button class="logout-btn">Logout</button>
+            </header>
+            <section class="eventos-section">
+                <div class="eventos-header">
+                    <h1>Gerenciar Eventos</h1>
+                    <p>Crie, edite e organize seus eventos</p>
+                    <input type="text" class="search-input" placeholder="Buscar eventos...">
+                    <button class="novo-evento-btn">+ Novo Evento</button>
+                </div>
+                <div class="eventos-list">
+                    <div class="evento-card">
+                        <div class="evento-info">
+                            <h2>Semana Acadêmica de Tecnologia</h2>
+                            <p>Palestras e workshops sobre tecnologia</p>
+                            <span>Data: 15-20 Dez</span><br>
+                            <span>Inscritos: 250</span>
+                        </div>
+                        <div class="evento-status ativo">Ativo</div>
+                        <div class="evento-actions">
+                            <button class="editar-btn">Editar</button>
+                            <button class="excluir-btn">Excluir</button>
+                        </div>
+                    </div>
+                    <div class="evento-card">
+                        <div class="evento-info">
+                            <h2>Mostra de Ciências</h2>
+                            <p>Apresentação de projetos científicos</p>
+                            <span>Data: 10 Jan</span><br>
+                            <span>Inscritos: 180</span>
+                        </div>
+                        <div class="evento-status programado">Programado</div>
+                        <div class="evento-actions">
+                            <button class="editar-btn">Editar</button>
+                            <button class="excluir-btn">Excluir</button>
+                        </div>
+                    </div>
+                    <div class="evento-card">
+                        <div class="evento-info">
+                            <h2>Simpósio de Agronomia</h2>
+                            <p>Práticas agrícolas sustentáveis</p>
+                            <span>Data: 5-7 Fev</span><br>
+                            <span>Inscritos: 320</span>
+                        </div>
+                        <div class="evento-status programado">Programado</div>
+                        <div class="evento-actions">
+                            <button class="editar-btn">Editar</button>
+                            <button class="excluir-btn">Excluir</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+</body>
+</html>
