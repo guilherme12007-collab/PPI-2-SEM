@@ -3,296 +3,589 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard do Participante</title>
+  <title>Mural de Eventos</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-  <script src="https://cdn.tailwindcss.com"></script>
   <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: 'Segoe UI', Arial, sans-serif;
-      background: linear-gradient(to bottom, #133824 0%, #125c2b 100%);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #e8e8e8;
+      display: flex;
       min-height: 100vh;
-      color: #fff;
     }
 
-    nav {
-      background: rgba(18, 92, 43, 0.95);
-      backdrop-filter: blur(10px);
-      border-bottom: 2px solid rgba(18, 92, 43, 0.5);
-      padding: 1rem 2rem;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-      position: sticky;
-      top: 0;
-      z-index: 100;
+    .sidebar {
+      width: 250px;
+      background-color: #2d2d2d;
+      color: white;
+      padding: 2rem 0;
+      position: fixed;
+      height: 100vh;
+      overflow-y: auto;
     }
 
-    nav .nav-links {
-      max-width: 1200px;
-      margin: 0 auto;
-      display: flex;
-      gap: 2rem;
-    }
-
-    nav a {
-      color: #fff;
-      text-decoration: none;
-      font-weight: 600;
-      padding: 0.5rem 1rem;
-      border-radius: 6px;
-      transition: all 0.3s;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    nav a:hover {
-      background: rgba(255, 255, 255, 0.1);
-      transform: translateY(-2px);
-    }
-
-    main {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 2rem;
-      min-height: calc(100vh - 80px);
-    }
-
-    main h1 {
-      font-size: 2.5rem;
-      font-weight: 700;
-      color: #fff;
-      margin-bottom: 2rem;
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    }
-
-    .grid-3 {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 1.5rem;
+    .sidebar-header {
+      padding: 0 1.5rem;
       margin-bottom: 2rem;
     }
 
-    .card {
-      background: rgba(255, 255, 255, 0.95);
-      border-radius: 12px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-      padding: 2rem;
-      border-left: 5px solid #125c2b;
-      transition: all 0.3s;
-      color: #333;
-    }
-
-    .card:hover {
-      transform: translateY(-8px);
-      box-shadow: 0 12px 40px rgba(18, 92, 43, 0.3);
-    }
-
-    .card h2 {
+    .sidebar-header h2 {
       font-size: 1.2rem;
-      color: #125c2b;
-      margin-bottom: 1rem;
-      font-weight: 700;
+      font-weight: 600;
+      color: #fff;
     }
 
-    .card h3 {
-      font-size: 1rem;
-      color: #125c2b;
-      font-weight: 700;
+    .sidebar-menu {
+      list-style: none;
+    }
+
+    .sidebar-menu li {
       margin-bottom: 0.5rem;
     }
 
-    .card .text-2xl {
-      font-size: 2.5rem;
-      font-weight: 700;
-      color: #125c2b;
-      margin-bottom: 0.5rem;
-    }
-
-    .card p {
-      color: #666;
-      font-size: 0.95rem;
-      margin: 0.5rem 0;
-    }
-
-    .card .text-muted {
-      color: #999;
-      font-size: 0.9rem;
-    }
-
-    .card strong {
-      color: #125c2b;
-    }
-
-    .btn-group {
+    .sidebar-menu a {
       display: flex;
+      align-items: center;
       gap: 1rem;
-      margin-top: 1.5rem;
-      flex-wrap: wrap;
-    }
-
-    .btn {
-      padding: 0.7rem 1.5rem;
-      border-radius: 6px;
-      font-weight: 700;
-      cursor: pointer;
-      border: none;
-      transition: all 0.3s;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
+      padding: 0.9rem 1.5rem;
+      color: #b0b0b0;
       text-decoration: none;
+      transition: all 0.3s;
       font-size: 0.95rem;
     }
 
-    .btn-primary {
-      background: linear-gradient(135deg, #125c2b 0%, #0d4620 100%);
-      color: white;
-      box-shadow: 0 4px 12px rgba(18, 92, 43, 0.3);
+    .sidebar-menu a:hover,
+    .sidebar-menu a.active {
+      background-color: #3d3d3d;
+      color: #fff;
+      border-left: 4px solid #28a745;
     }
 
-    .btn-primary:hover {
-      background: linear-gradient(135deg, #0d4620 0%, #092f16 100%);
-      box-shadow: 0 6px 16px rgba(18, 92, 43, 0.4);
-      transform: translateY(-2px);
-    }
-
-    .btn-success {
-      background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-      color: white;
-      box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
-    }
-
-    .btn-success:hover {
-      background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
-      box-shadow: 0 6px 16px rgba(34, 197, 94, 0.4);
-      transform: translateY(-2px);
-    }
-
-    .btn-secondary {
-      background: rgba(18, 92, 43, 0.15);
-      color: #125c2b;
-      border: 2px solid #125c2b;
-      box-shadow: none;
-    }
-
-    .btn-secondary:hover {
-      background: rgba(18, 92, 43, 0.25);
-      transform: translateY(-2px);
-    }
-
-    .badge {
-      display: inline-block;
-      padding: 0.5rem 1rem;
-      border-radius: 20px;
-      font-size: 0.85rem;
-      font-weight: 700;
-    }
-
-    .badge-success {
-      background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-      color: white;
-      box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3);
-    }
-
-    .badge-warning {
-      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-      color: white;
-      box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
-    }
-
-    .badge-info {
-      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-      color: white;
-      box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
-    }
-
-    .event-status {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      margin-top: 1rem;
-    }
-
-    .full-width {
-      width: 100%;
+    .sidebar-menu a i {
+      font-size: 1.1rem;
+      width: 20px;
       text-align: center;
     }
 
+    .main-wrapper {
+      margin-left: 250px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header {
+      background-color: #fff;
+      padding: 1rem 2rem;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .logo-placeholder {
+      width: 50px;
+      height: 50px;
+      background-color: #f0f0f0;
+      border: 2px dashed #ccc;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      color: #999;
+      text-align: center;
+      padding: 0.25rem;
+    }
+
+    .system-title {
+      font-size: 1rem;
+      color: #333;
+      font-weight: 600;
+    }
+
+    .header-right {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .header-icon {
+      color: #666;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: color 0.3s;
+    }
+
+    .header-icon:hover {
+      color: #28a745;
+    }
+
+    .btn-logout {
+      background-color: #28a745;
+      color: white;
+      border: none;
+      padding: 0.5rem 1.5rem;
+      border-radius: 4px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+    }
+
+    .btn-logout:hover {
+      background-color: #218838;
+    }
+
+    .main-content {
+      flex: 1;
+      padding: 2rem;
+      overflow-y: auto;
+    }
+
+    .page-header {
+      margin-bottom: 2rem;
+    }
+
+    .page-header h1 {
+      font-size: 1.8rem;
+      color: #333;
+      margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+      color: #666;
+      font-size: 0.95rem;
+    }
+
+    .search-box {
+      margin-bottom: 2rem;
+      position: relative;
+    }
+
+    .search-box input {
+      width: 100%;
+      max-width: 500px;
+      padding: 0.75rem 1rem 0.75rem 2.5rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 0.95rem;
+      background-color: #fff;
+    }
+
+    .search-box input:focus {
+      outline: none;
+      border-color: #28a745;
+    }
+
+    .search-box i {
+      position: absolute;
+      left: 0.8rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #999;
+    }
+
+    .events-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .event-card {
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      padding: 1.5rem;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .event-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    }
+
+    .event-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 1rem;
+    }
+
+    .event-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #333;
+      margin-bottom: 0.3rem;
+    }
+
+    .event-badge {
+      background-color: #e8f5e9;
+      color: #28a745;
+      padding: 0.25rem 0.75rem;
+      border-radius: 12px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .event-description {
+      color: #666;
+      font-size: 0.85rem;
+      line-height: 1.6;
+      margin-bottom: 1.2rem;
+    }
+
+    .event-details {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      margin-bottom: 1.2rem;
+    }
+
+    .event-detail {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #666;
+      font-size: 0.8rem;
+    }
+
+    .event-detail i {
+      color: #28a745;
+      width: 16px;
+      font-size: 0.85rem;
+    }
+
+    .btn-inscrever {
+      width: 100%;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      padding: 0.7rem;
+      border-radius: 4px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      font-size: 0.9rem;
+    }
+
+    .btn-inscrever:hover {
+      background-color: #218838;
+    }
+
+    @media (max-width: 1024px) {
+      .sidebar {
+        width: 200px;
+      }
+
+      .main-wrapper {
+        margin-left: 200px;
+      }
+    }
+
     @media (max-width: 768px) {
-      nav .nav-links {
-        flex-wrap: wrap;
-        gap: 1rem;
+      .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s;
+        z-index: 1000;
       }
 
-      main {
-        padding: 1rem;
+      .sidebar.active {
+        transform: translateX(0);
       }
 
-      main h1 {
-        font-size: 1.8rem;
+      .main-wrapper {
+        margin-left: 0;
       }
 
-      .grid-3 {
+      .header {
+        padding: 0.75rem 1rem;
+      }
+
+      .main-content {
+        padding: 1.5rem 1rem;
+      }
+
+      .events-grid {
         grid-template-columns: 1fr;
       }
 
-      .btn-group {
-        flex-direction: column;
+      .mobile-menu-btn {
+        display: block;
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        color: #333;
+        cursor: pointer;
+        margin-right: 1rem;
       }
+    }
 
-      .btn {
-        width: 100%;
-        justify-content: center;
-      }
+    .mobile-menu-btn {
+      display: none;
     }
   </style>
 </head>
 <body>
-  <nav>
-    <div class="nav-links">
-      <a href="participante-dashboard.html"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
-      <a href="meus-eventos.html"><i class="fa-solid fa-calendar-days"></i> Meus Eventos</a>
-      <a href="login.html"><i class="fa-solid fa-sign-out-alt"></i> Sair</a>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <h2>Menu</h2>
     </div>
-  </nav>
+    <ul class="sidebar-menu">
+      <li>
+        <a href="#" class="active">
+          <i class="fa-solid fa-table-cells"></i>
+          <span>Mural de Eventos</span>
+        </a>
+      </li>
+      <li>
+        <a href="meus-eventos.html">
+          <i class="fa-solid fa-calendar-check"></i>
+          <span>Meus Eventos</span>
+        </a>
+      </li>
+      <li>
+        <a href="certificados.html">
+          <i class="fa-solid fa-certificate"></i>
+          <span>Meus Certificados</span>
+        </a>
+      </li>
+      <li>
+        <a href="perfil.html">
+          <i class="fa-solid fa-user"></i>
+          <span>Meu Perfil</span>
+        </a>
+      </li>
+      <li>
+        <a href="configuracoes.html">
+          <i class="fa-solid fa-gear"></i>
+          <span>Configurações</span>
+        </a>
+      </li>
+    </ul>
+  </aside>
 
-  <main>
-    <h1><i class="fa-solid fa-user-circle"></i> Dashboard do Participante</h1>
+  <div class="main-wrapper">
+    <header class="header">
+      <div class="header-left">
+        <button class="mobile-menu-btn" onclick="toggleSidebar()">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+        <div class="logo-placeholder">
+          <img src="https://www.iffarroupilha.edu.br/component/k2/attachments/download/2367/0e66a1e8d61f98d1b8f84efa8700e499" alt="ifflogo" style="height: 80px; width: auto;">
+        </div>
+        <span class="system-title">Sistema de Eventos</span>
+      </div>
+      <div class="header-right">
+        <a href="login.html" class="btn-logout">
+          <i class="fa-solid fa-right-from-bracket"></i>
+          <span>Logout</span>
+        </a>
+      </div>
+    </header>
 
-    <div class="card">
-      <h2><i class="fa-solid fa-play-circle"></i> Evento em Andamento</h2>
-      <h3>Workshop de Desenvolvimento Web</h3>
-      <p><strong>Local:</strong> Auditório Principal</p>
-      <p><strong>Data e Hora:</strong> 10/06/2025, 14:00 às 18:00</p>
-      <p><strong>Descrição:</strong> Aprenda os fundamentos do desenvolvimento web moderno com HTML, CSS e JavaScript.</p>
-
-      <div class="event-status">
-        <span class="badge badge-success"><i class="fa-solid fa-circle-play"></i> Em andamento</span>
+    <main class="main-content">
+      <div class="page-header">
+        <h1>Mural de Eventos</h1>
+        <p>Explore e se inscreva nos eventos disponíveis</p>
       </div>
 
-      <div class="btn-group">
-        <button class="btn btn-primary">
-          <i class="fa-solid fa-play"></i> Acessar Transmissão
-        </button>
-        <button class="btn btn-secondary">
-          <i class="fa-solid fa-download"></i> Material do Evento
-        </button>
+      <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" placeholder="Buscar eventos..." id="searchInput">
       </div>
-    </div>
 
-    <div class="card" style="margin-top: 2rem;">
-      <h2><i class="fa-solid fa-list"></i> Ações Rápidas</h2>
-      <div class="btn-group" style="margin-top: 1rem;">
-        <button class="btn btn-primary">
-          <i class="fa-solid fa-bell"></i> Inscrever em Evento
-        </button>
-        <button class="btn btn-primary">
-          <i class="fa-solid fa-file-pdf"></i> Baixar Certificados
-        </button>
-        <button class="btn btn-secondary">
-          <i class="fa-solid fa-user"></i>Perfil
-        </button>
+      <div class="events-grid">
+        <div class="event-card">
+          <div class="event-card-header">
+            <div>
+              <h3 class="event-title">Semana Acadêmica de Tecnologia</h3>
+            </div>
+            <span class="event-badge">Tecnologia</span>
+          </div>
+          <p class="event-description">Palestras e workshops sobre as últimas tendências em tecnologia e inovação</p>
+          <div class="event-details">
+            <div class="event-detail">
+              <i class="fa-solid fa-calendar"></i>
+              <span>15 a 20 de Dezembro, 2025</span>
+            </div>
+            <div class="event-detail">
+              <i class="fa-solid fa-location-dot"></i>
+              <span>Campus Santa Rosa</span>
+            </div>
+            <div class="event-detail">
+              <i class="fa-solid fa-users"></i>
+              <span>280 inscritos</span>
+            </div>
+          </div>
+          <button class="btn-inscrever">Inscrever-se</button>
+        </div>
+
+        <div class="event-card">
+          <div class="event-card-header">
+            <div>
+              <h3 class="event-title">Mostra de Ciências</h3>
+            </div>
+            <span class="event-badge">Ciências</span>
+          </div>
+          <p class="event-description">Apresentação de projetos científicos desenvolvidos por alunos do IFFar</p>
+          <div class="event-details">
+            <div class="event-detail">
+              <i class="fa-solid fa-calendar"></i>
+              <span>10 de Janeiro, 2026</span>
+            </div>
+            <div class="event-detail">
+              <i class="fa-solid fa-location-dot"></i>
+              <span>Campus Alegrete</span>
+            </div>
+            <div class="event-detail">
+              <i class="fa-solid fa-users"></i>
+              <span>180 inscritos</span>
+            </div>
+          </div>
+          <button class="btn-inscrever">Inscrever-se</button>
+        </div>
+
+        <div class="event-card">
+          <div class="event-card-header">
+            <div>
+              <h3 class="event-title">Simpósio de Agronomia</h3>
+            </div>
+            <span class="event-badge">Agronomia</span>
+          </div>
+          <p class="event-description">Discussões sobre práticas agrícolas sustentáveis e inovação no campo</p>
+          <div class="event-details">
+            <div class="event-detail">
+              <i class="fa-solid fa-calendar"></i>
+              <span>5 a 7 de Fevereiro, 2026</span>
+            </div>
+            <div class="event-detail">
+              <i class="fa-solid fa-location-dot"></i>
+              <span>Campus Jaguari</span>
+            </div>
+            <div class="event-detail">
+              <i class="fa-solid fa-users"></i>
+              <span>320 inscritos</span>
+            </div>
+          </div>
+          <button class="btn-inscrever">Inscrever-se</button>
+        </div>
+
+        <div class="event-card">
+          <div class="event-card-header">
+            <div>
+              <h3 class="event-title">Workshop de Programação</h3>
+            </div>
+            <span class="event-badge">Tecnologia</span>
+          </div>
+          <p class="event-description">Aprenda as melhores práticas de desenvolvimento de software</p>
+          <div class="event-details">
+            <div class="event-detail">
+              <i class="fa-solid fa-calendar"></i>
+              <span>20 de Janeiro, 2026</span>
+            </div>
+            <div class="event-detail">
+              <i class="fa-solid fa-location-dot"></i>
+              <span>Campus São Vicente do Sul</span>
+            </div>
+            <div class="event-detail">
+              <i class="fa-solid fa-users"></i>
+              <span>95 inscritos</span>
+            </div>
+          </div>
+          <button class="btn-inscrever">Inscrever-se</button>
+        </div>
+
+        <div class="event-card">
+          <div class="event-card-header">
+            <div>
+              <h3 class="event-title">Semana do Meio Ambiente</h3>
+            </div>
+            <span class="event-badge">Meio Ambiente</span>
+          </div>
+          <p class="event-description">Atividades sobre sustentabilidade e preservação ambiental</p>
+          <div class="event-details">
+            <div class="event-detail">
+              <i class="fa-solid fa-calendar"></i>
+              <span>1 a 5 de Março, 2026</span>
+            </div>
+            <div class="event-detail">
+              <i class="fa-solid fa-location-dot"></i>
+              <span>Campus Frederico Westphalen</span>
+            </div>
+            <div class="event-detail">
+              <i class="fa-solid fa-users"></i>
+              <span>450 inscritos</span>
+            </div>
+          </div>
+          <button class="btn-inscrever">Inscrever-se</button>
+        </div>
+
+        <div class="event-card">
+          <div class="event-card-header">
+            <div>
+              <h3 class="event-title">Feira de Profissões</h3>
+            </div>
+            <span class="event-badge">Carreira</span>
+          </div>
+          <p class="event-description">Conheça as oportunidades de carreira e áreas de atuação</p>
+          <div class="event-details">
+            <div class="event-detail">
+              <i class="fa-solid fa-calendar"></i>
+              <span>15 de Março, 2026</span>
+            </div>
+            <div class="event-detail">
+              <i class="fa-solid fa-location-dot"></i>
+              <span>Campus Panambi</span>
+            </div>
+            <div class="event-detail">
+              <i class="fa-solid fa-users"></i>
+              <span>500 inscritos</span>
+            </div>
+          </div>
+          <button class="btn-inscrever">Inscrever-se</button>
+        </div>
       </div>
-    </div>
-  </main>
+    </main>
+  </div>
+
+  <script>
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('active');
+    }
+
+    // Função de busca
+    document.getElementById('searchInput').addEventListener('input', function(e) {
+      const searchTerm = e.target.value.toLowerCase();
+      const cards = document.querySelectorAll('.event-card');
+      
+      cards.forEach(card => {
+        const title = card.querySelector('.event-title').textContent.toLowerCase();
+        const description = card.querySelector('.event-description').textContent.toLowerCase();
+        
+        if (title.includes(searchTerm) || description.includes(searchTerm)) {
+          card.style.display = 'block';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    });
+  </script>
 </body>
 </html>

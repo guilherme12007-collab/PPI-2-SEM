@@ -3,45 +3,125 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login</title>
+  <title>Login - Sistema de Eventos</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-  <script src="https://cdn.tailwindcss.com"></script>
   <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
     body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #e8e8e8;
       min-height: 100vh;
+    }
+
+    .header {
+      background-color: #fff;
+      padding: 1rem 2rem;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .logo-placeholder {
+      width: 50px;
+      height: 50px;
+      background-color: #f0f0f0;
+      border: 2px dashed #ccc;
+      border-radius: 4px;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: linear-gradient(to bottom, #133824 0%, #125c2b 100%);
-      padding: 0 1rem;
-      font-family: 'Segoe UI', Arial, sans-serif;
+      font-size: 0.75rem;
+      color: #999;
+      text-align: center;
+      padding: 0.25rem;
     }
 
-    .login-container {
+    .system-title {
+      font-size: 1.1rem;
+      color: #333;
+      font-weight: 600;
+    }
+
+    .header-right {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .header-icon {
+      color: #666;
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: color 0.3s;
+    }
+
+    .header-icon:hover {
+      color: #125c2b;
+    }
+
+    .btn-cadastro {
+      background-color: #28a745;
+      color: white;
+      border: none;
+      padding: 0.5rem 1.5rem;
+      border-radius: 4px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-cadastro:hover {
+      background-color: #218838;
+    }
+
+    .main-content {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: calc(100vh - 90px);
+      padding: 2rem 1rem;
+    }
+
+    .login-card {
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      padding: 2.5rem 2rem;
       width: 100%;
       max-width: 420px;
-      background: rgba(255, 255, 255, 0.95);
-      border-radius: 12px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-      padding: 3rem 2rem;
     }
 
     .login-header {
       text-align: center;
-      margin-bottom: 2.5rem;
+      margin-bottom: 2rem;
     }
 
     .login-header h1 {
-      font-size: 2.2rem;
-      color: #125c2b;
-      margin: 0 0 0.5rem 0;
-      font-weight: 700;
+      font-size: 1.8rem;
+      color: #333;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
     }
 
     .login-header p {
       color: #666;
-      font-size: 0.95rem;
-      margin: 0;
+      font-size: 0.9rem;
     }
 
     .form-group {
@@ -50,200 +130,134 @@
 
     .form-group label {
       display: block;
-      font-weight: 600;
       color: #333;
+      font-weight: 500;
       margin-bottom: 0.5rem;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
     }
 
     .form-group input[type="email"],
     .form-group input[type="password"] {
       width: 100%;
       padding: 0.75rem;
-      border: 2px solid #e5e7eb;
-      border-radius: 6px;
-      font-size: 1rem;
-      transition: border-color 0.3s, box-shadow 0.3s;
-      box-sizing: border-box;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 0.95rem;
+      transition: border-color 0.3s;
+      background-color: #f8f9fa;
     }
 
     .form-group input[type="email"]:focus,
     .form-group input[type="password"]:focus {
       outline: none;
-      border-color: #125c2b;
-      box-shadow: 0 0 0 3px rgba(18, 92, 43, 0.1);
+      border-color: #28a745;
+      background-color: #fff;
     }
 
-    .radio-group {
-      margin-bottom: 1.5rem;
+    .form-group input::placeholder {
+      color: #aaa;
     }
-
-    .radio-group label {
-      font-weight: 600;
-      color: #333;
-      margin-bottom: 0.75rem;
-    }
-
-    .radio-options {
-      display: flex;
-      gap: 2rem;
-      margin-top: 0.75rem;
-    }
-
-    .radio-options label {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-weight: 500;
-      margin: 0;
-      font-size: 0.95rem;
-      cursor: pointer;
-    }
-
-    .radio-options input[type="radio"] {
-      cursor: pointer;
-      width: 18px;
-      height: 18px;
-    }
-
-    .button-group {
-      display: flex;
-      gap: 1rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .btn-login {
-      flex: 1;
+    
+    .btn-entrar {
+      width: 100%;
       padding: 0.85rem;
-      background: linear-gradient(135deg, #125c2b 0%, #0d4620 100%);
+      background-color: #28a745;
       color: white;
       border: none;
-      border-radius: 6px;
-      font-size: 1.05rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.3s;
-      box-shadow: 0 4px 12px rgba(18, 92, 43, 0.3);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-    }
-
-    .btn-login:hover {
-      background: linear-gradient(135deg, #0d4620 0%, #092f16 100%);
-      box-shadow: 0 6px 16px rgba(18, 92, 43, 0.4);
-      transform: translateY(-2px);
-    }
-
-    .btn-login:active {
-      transform: translateY(0);
-    }
-
-    .btn-login i {
-      font-size: 1.1rem;
-    }
-
-    .signup-section {
-      text-align: center;
-      padding: 1.5rem;
-      background: #f8fafb;
-      border-radius: 8px;
-      border: 1px solid #e5e7eb;
-    }
-
-    .signup-section p {
-      margin: 0;
-      color: #555;
-      font-size: 0.95rem;
-    }
-
-    .btn-signup {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      background: linear-gradient(135deg, #125c2b 0%, #0d4620 100%);
-      color: white;
-      text-decoration: none;
-      padding: 0.65rem 1.5rem;
-      border-radius: 6px;
-      font-weight: 700;
-      margin-top: 0.8rem;
-      transition: all 0.3s;
-      box-shadow: 0 4px 12px rgba(18, 92, 43, 0.3);
-      cursor: pointer;
-      border: none;
+      border-radius: 4px;
       font-size: 1rem;
-      justify-content: center;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      margin-bottom: 1rem;
     }
 
-    .btn-signup:hover {
-      background: linear-gradient(135deg, #0d4620 0%, #092f16 100%);
-      box-shadow: 0 6px 16px rgba(18, 92, 43, 0.4);
-      transform: translateY(-2px);
+    .btn-entrar:hover {
+      background-color: #218838;
+    }
+
+    .cadastro-link {
+      text-align: center;
+      font-size: 0.9rem;
+      color: #666;
+    }
+
+    .cadastro-link a {
+      color: #28a745;
       text-decoration: none;
+      font-weight: 600;
     }
 
-    .btn-signup:active {
-      transform: translateY(0);
+    .cadastro-link a:hover {
+      text-decoration: underline;
     }
 
-    .btn-signup i {
-      font-size: 1.1rem;
-    }
+    @media (max-width: 768px) {
+      .header {
+        padding: 0.75rem 1rem;
+      }
 
-    .login-nav {
-      display: none;
+      .system-title {
+        font-size: 0.95rem;
+      }
+
+      .logo-placeholder {
+        width: 40px;
+        height: 40px;
+        font-size: 0.65rem;
+      }
+
+      .btn-cadastro {
+        padding: 0.4rem 1rem;
+        font-size: 0.9rem;
+      }
+
+      .login-card {
+        padding: 2rem 1.5rem;
+      }
     }
   </style>
 </head>
 <body>
-  <main>
-    <div class="login-container">
+  <header class="header">
+    <div class="header-left">
+      <div class="logo-placeholder">
+        <img src="https://www.iffarroupilha.edu.br/component/k2/attachments/download/2367/0e66a1e8d61f98d1b8f84efa8700e499" alt="ifflogo" style="height: 80px; width: auto;">
+        
+      </div>
+      <span class="system-title">Sistema de Eventos</span>
+    </div>
+    <div class="header-right">
+      <a href="registro.html" class="btn-cadastro">
+        <i class="fa-solid fa-user-plus"></i>
+        <span>Cadastro</span>
+      </a>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="login-card">
       <div class="login-header">
         <h1>Login</h1>
-        <p>Acesse sua conta para continuar</p>
+        <p>Entre com suas credenciais para acessar o sistema</p>
       </div>
 
       <form onsubmit="handleLogin(event)">
         <div class="form-group">
-          <label for="email">E-mail</label>
-          <input type="email" id="email" name="email" placeholder="seu@email.com" required>
+          <label for="email">Email Institucional</label>
+          <input type="email" id="email" name="email" placeholder="seu.email@ifpr.edu.br" required>
         </div>
 
         <div class="form-group">
           <label for="password">Senha</label>
-          <input type="password" id="password" name="password" placeholder="Sua senha" required>
+          <input type="password" id="password" name="password" placeholder="********" required>
         </div>
 
-        <div class="radio-group">
-          <label>Tipo de Usuário</label>
-          <div class="radio-options">
-            <label>
-              <input type="radio" name="tipo" value="admin" required>
-              <span>Administrador</span>
-            </label>
-            <label>
-              <input type="radio" name="tipo" value="participante" required checked>
-              <span>Participante</span>
-            </label>
-          </div>
-        </div>
-
-        <div class="button-group">
-          <button type="submit" class="btn-login">
-            <i class="fa-solid fa-door-open"></i>
-            <span>Entrar</span>
-          </button>
-        </div>
+        <button type="submit" class="btn-entrar">Entrar</button>
       </form>
 
-      <div class="signup-section">
-        <p>Não tem conta?</p>
-        <a href="registro.html" class="btn-signup">
-          <i class="fa-solid fa-user-plus"></i>
-          <span>Registrar Agora</span>
-        </a>
+      <div class="cadastro-link">
+        Não tem uma conta? <a href="registro.html">Cadastre-se</a>
       </div>
     </div>
   </main>
@@ -251,12 +265,7 @@
   <script>
     function handleLogin(event) {
       event.preventDefault();
-      var tipo = document.querySelector('input[name="tipo"]:checked').value;
-      if(tipo === 'admin') {
-        window.location.href = 'index.html';
-      } else {
-        window.location.href = 'participante-dashboard.html';
-      }
+      window.location.href = 'participante-dashboard.html';
     }
   </script>
 </body>

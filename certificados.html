@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <title>Meus Eventos</title>
+    <title>Meus Certificados</title>
     <style>
         * {
             margin: 0;
@@ -176,13 +176,13 @@
             font-size: 0.95rem;
         }
 
-        .events-grid {
+        .certificates-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
             gap: 2rem;
         }
 
-        .event-card {
+        .certificate-card {
             background: white;
             border-radius: 8px;
             padding: 1.5rem;
@@ -190,26 +190,26 @@
             transition: transform 0.2s, box-shadow 0.2s;
         }
 
-        .event-card:hover {
+        .certificate-card:hover {
             transform: translateY(-4px);
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
 
-        .event-header {
+        .certificate-header {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
             margin-bottom: 1rem;
         }
 
-        .event-title {
+        .certificate-title {
             font-size: 1.2rem;
             color: #333;
             font-weight: 700;
             flex: 1;
         }
 
-        .event-badge {
+        .certificate-badge {
             padding: 0.25rem 0.75rem;
             border-radius: 12px;
             font-size: 0.7rem;
@@ -217,29 +217,24 @@
             white-space: nowrap;
         }
 
-        .badge-andamento {
+        .badge-anexado {
             background-color: #d4edda;
             color: #155724;
         }
 
-        .badge-breve {
-            background-color: #d1ecf1;
-            color: #0c5460;
+        .badge-pendente {
+            background-color: #fff3cd;
+            color: #856404;
         }
 
-        .badge-finalizado {
-            background-color: #e2e3e5;
-            color: #383d41;
-        }
-
-        .event-description {
+        .certificate-description {
             color: #666;
             font-size: 0.85rem;
             margin-bottom: 1.2rem;
             line-height: 1.5;
         }
 
-        .event-info {
+        .certificate-info {
             display: flex;
             flex-direction: column;
             gap: 0.6rem;
@@ -260,10 +255,97 @@
             font-size: 0.85rem;
         }
 
-        .event-actions {
+        .upload-area {
+            border: 2px dashed #ddd;
+            border-radius: 6px;
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 1rem;
+            background-color: #f9f9f9;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .upload-area:hover {
+            border-color: #28a745;
+            background-color: #f1f8f4;
+        }
+
+        .upload-area.dragging {
+            border-color: #28a745;
+            background-color: #e8f5e9;
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: #28a745;
+            margin-bottom: 1rem;
+        }
+
+        .upload-text {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-hint {
+            color: #999;
+            font-size: 0.75rem;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .uploaded-file {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.8rem;
+            background-color: #f1f8f4;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+        }
+
+        .file-icon {
+            color: #28a745;
+            font-size: 1.5rem;
+        }
+
+        .file-details {
             display: flex;
             flex-direction: column;
-            gap: 0.8rem;
+        }
+
+        .file-name {
+            font-size: 0.85rem;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .file-size {
+            font-size: 0.75rem;
+            color: #666;
+        }
+
+        .btn-remove {
+            background: none;
+            border: none;
+            color: #dc3545;
+            cursor: pointer;
+            padding: 0.3rem;
+            font-size: 1.1rem;
+            transition: color 0.2s;
+        }
+
+        .btn-remove:hover {
+            color: #c82333;
         }
 
         .btn {
@@ -278,6 +360,7 @@
             gap: 0.5rem;
             transition: all 0.2s;
             font-size: 0.9rem;
+            width: 100%;
         }
 
         .btn-primary {
@@ -289,51 +372,34 @@
             background-color: #218838;
         }
 
+        .btn-primary:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+
         .btn-secondary {
             background-color: transparent;
-            color: #666;
-            border: 1px solid #ddd;
+            color: #28a745;
+            border: 1px solid #28a745;
         }
 
         .btn-secondary:hover {
-            background-color: #f5f5f5;
-        }
-
-        .check-in-note {
-            color: #888;
-            font-size: 0.85rem;
-            text-align: center;
-            padding: 1rem;
-        }
-
-        .presence-confirmed {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            color: #28a745;
-            font-size: 0.9rem;
-            padding: 0.8rem;
             background-color: #f1f8f4;
-            border-radius: 4px;
         }
 
-        .dias-faltas {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            color: #af4c4c;
-            font-size: 0.9rem;
-            padding: 0.8rem;
-            background-color: #fef5f5;
-            border-radius: 4px;
+        .btn-view {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .btn-view:hover {
+            background-color: #0056b3;
         }
 
         .modal {
             display: none;
             position: fixed;
-            z-index: 10;
+            z-index: 1000;
             left: 0;
             top: 0;
             width: 100%;
@@ -350,55 +416,39 @@
         .modal-content {
             background: white;
             width: 90%;
-            max-width: 400px;
+            max-width: 500px;
             padding: 2rem;
             border-radius: 8px;
-            text-align: center;
             box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            max-height: 90vh;
+            overflow-y: auto;
         }
 
-        .modal-content h2 {
-            color: #333;
-            margin-bottom: 1rem;
-            font-size: 1.3rem;
-        }
-
-        .modal-content p {
-            color: #666;
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 1.5rem;
         }
 
-        .modal-buttons {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-        }
-
-        .modal-btn {
-            padding: 0.6rem 1.5rem;
-            border-radius: 4px;
-            border: none;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.2s;
-        }
-
-        .modal-btn-confirm {
-            background-color: #28a745;
-            color: white;
-        }
-
-        .modal-btn-confirm:hover {
-            background-color: #218838;
-        }
-
-        .modal-btn-cancel {
-            background-color: #e0e0e0;
+        .modal-header h2 {
             color: #333;
+            font-size: 1.3rem;
         }
 
-        .modal-btn-cancel:hover {
-            background-color: #d0d0d0;
+        .btn-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+        }
+
+        .btn-close:hover {
+            color: #333;
         }
 
         .mobile-menu-btn {
@@ -440,7 +490,7 @@
                 margin-right: 1rem;
             }
 
-            .events-grid {
+            .certificates-grid {
                 grid-template-columns: 1fr;
             }
         }
@@ -459,13 +509,13 @@
                 </a>
             </li>
             <li>
-                <a href="#" class="active">
+                <a href="meus-eventos.html">
                     <i class="fa-solid fa-calendar-check"></i>
                     <span>Meus Eventos</span>
                 </a>
             </li>
             <li>
-                <a href="certificados.html">
+                <a href="#" class="active">
                     <i class="fa-solid fa-certificate"></i>
                     <span>Meus Certificados</span>
                 </a>
@@ -497,7 +547,7 @@
                 <span class="system-title">Sistema de Eventos</span>
             </div>
             <div class="header-actions">
-                <button class="logout" onclick="openLogoutModal()">
+                <button class="logout" onclick="window.location.href='home.html'">
                     <i class="fa-solid fa-right-from-bracket"></i>
                     Logout
                 </button>
@@ -506,19 +556,19 @@
 
         <div class="container">
             <div class="page-header">
-                <h1>Meus Eventos</h1>
-                <p>Gerencie suas inscrições e controle de presença</p>
+                <h1>Meus Certificados</h1>
+                <p>Anexe e gerencie os certificados dos eventos que você participou</p>
             </div>
 
-            <div class="events-grid">
-                <!-- Evento 1 -->
-                <div class="event-card">
-                    <div class="event-header">
-                        <h2 class="event-title">Semana de Tecnologia 2024</h2>
-                        <span class="event-badge badge-andamento">Em andamento</span>
+            <div class="certificates-grid">
+                <!-- Evento 1 - Pendente -->
+                <div class="certificate-card">
+                    <div class="certificate-header">
+                        <h3 class="certificate-title">Semana de Tecnologia 2024</h3>
+                        <span class="certificate-badge badge-pendente">Pendente</span>
                     </div>
-                    <p class="event-description">Palestras e workshops sobre tecnologias emergentes</p>
-                    <div class="event-info">
+                    <p class="certificate-description">Palestras e workshops sobre tecnologias emergentes</p>
+                    <div class="certificate-info">
                         <div class="info-item">
                             <i class="fa-solid fa-calendar"></i>
                             <span>15-20 de Maio, 2024</span>
@@ -528,54 +578,24 @@
                             <span>Campus Panambi</span>
                         </div>
                         <div class="info-item">
-                            <i class="fa-solid fa-user"></i>
-                            <span>150 inscritos</span>
+                            <i class="fa-solid fa-clock"></i>
+                            <span>40 horas</span>
                         </div>
                     </div>
-                    <div class="event-actions">
-                        <button class="btn btn-primary" onclick="openCheckinModal('Semana de Tecnologia 2024', 'check-in')">
-                            <i class="fa-solid fa-arrow-right"></i> Fazer Check-in
-                        </button>
-                        <button class="btn btn-secondary" onclick="openCheckinModal('Semana de Tecnologia 2024', 'check-out')">
-                            <i class="fa-solid fa-arrow-left"></i> Fazer Check-out
-                        </button>
-                    </div>
+                    <button class="btn btn-secondary" onclick="openUploadModal('Semana de Tecnologia 2024', 1)">
+                        <i class="fa-solid fa-upload"></i>
+                        Anexar Certificado
+                    </button>
                 </div>
 
-                <!-- Evento 2 -->
-                <div class="event-card">
-                    <div class="event-header">
-                        <h2 class="event-title">Workshop de Inteligência Artificial</h2>
-                        <span class="event-badge badge-breve">Em breve</span>
+                <!-- Evento 2 - Anexado -->
+                <div class="certificate-card">
+                    <div class="certificate-header">
+                        <h3 class="certificate-title">Hackathon IFFar 2024</h3>
+                        <span class="certificate-badge badge-anexado">Anexado</span>
                     </div>
-                    <p class="event-description">Introdução prática ao desenvolvimento com IA</p>
-                    <div class="event-info">
-                        <div class="info-item">
-                            <i class="fa-solid fa-calendar"></i>
-                            <span>10 de Junho, 2024</span>
-                        </div>
-                        <div class="info-item">
-                            <i class="fa-solid fa-location-dot"></i>
-                            <span>Laboratório de Informática</span>
-                        </div>
-                        <div class="info-item">
-                            <i class="fa-solid fa-user"></i>
-                            <span>45 inscritos</span>
-                        </div>
-                    </div>
-                    <div class="check-in-note">
-                        Check-in disponível durante o evento
-                    </div>
-                </div>
-
-                <!-- Evento 3 -->
-                <div class="event-card">
-                    <div class="event-header">
-                        <h2 class="event-title">Hackathon IFFar 2024</h2>
-                        <span class="event-badge badge-finalizado">Finalizado</span>
-                    </div>
-                    <p class="event-description">Competição de programação de 24 horas</p>
-                    <div class="event-info">
+                    <p class="certificate-description">Competição de programação de 24 horas</p>
+                    <div class="certificate-info">
                         <div class="info-item">
                             <i class="fa-solid fa-calendar"></i>
                             <span>5-6 de Abril, 2024</span>
@@ -585,100 +605,204 @@
                             <span>Campus Principal</span>
                         </div>
                         <div class="info-item">
-                            <i class="fa-solid fa-user"></i>
-                            <span>80 inscritos</span>
+                            <i class="fa-solid fa-clock"></i>
+                            <span>24 horas</span>
+                        </div>
+                        <div class="info-item">
+                            <i class="fa-solid fa-file-pdf"></i>
+                            <span>certificado_hackathon_2024.pdf</span>
                         </div>
                     </div>
-                    <div class="presence-confirmed">
-                        <i class="fa-solid fa-circle-check"></i>
-                        <span>Presença: Confirmada</span>
+                    <button class="btn btn-view" onclick="viewCertificate('certificado_hackathon_2024.pdf')">
+                        <i class="fa-solid fa-eye"></i>
+                        Visualizar Certificado
+                    </button>
+                </div>
+
+                <!-- Evento 3 - Pendente -->
+                <div class="certificate-card">
+                    <div class="certificate-header">
+                        <h3 class="certificate-title">Workshop de IA</h3>
+                        <span class="certificate-badge badge-pendente">Pendente</span>
                     </div>
+                    <p class="certificate-description">Introdução prática ao desenvolvimento com IA</p>
+                    <div class="certificate-info">
+                        <div class="info-item">
+                            <i class="fa-solid fa-calendar"></i>
+                            <span>10 de Junho, 2024</span>
+                        </div>
+                        <div class="info-item">
+                            <i class="fa-solid fa-location-dot"></i>
+                            <span>Laboratório de Informática</span>
+                        </div>
+                        <div class="info-item">
+                            <i class="fa-solid fa-clock"></i>
+                            <span>8 horas</span>
+                        </div>
+                    </div>
+                    <button class="btn btn-secondary" onclick="openUploadModal('Workshop de IA', 3)">
+                        <i class="fa-solid fa-upload"></i>
+                        Anexar Certificado
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Modal de Confirmação -->
-    <div id="modal" class="modal" onclick="closeModalOutside(event)">
+    <!-- Modal de Upload -->
+    <div id="uploadModal" class="modal" onclick="closeModalOutside(event)">
         <div class="modal-content">
-            <h2 id="modal-title">Confirmar Ação</h2>
-            <p id="modal-message">Deseja continuar?</p>
-            <div class="modal-buttons">
-                <button class="modal-btn modal-btn-cancel" onclick="closeModal()">Cancelar</button>
-                <button class="modal-btn modal-btn-confirm" onclick="confirmAction()">Confirmar</button>
+            <div class="modal-header">
+                <h2 id="modalTitle">Anexar Certificado</h2>
+                <button class="btn-close" onclick="closeUploadModal()">×</button>
+            </div>
+            
+            <div id="uploadArea" class="upload-area" onclick="document.getElementById('fileInput').click()">
+                <div class="upload-icon">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                </div>
+                <p class="upload-text">Clique ou arraste o arquivo aqui</p>
+                <p class="upload-hint">PDF, JPG ou PNG (máx. 5MB)</p>
+            </div>
+
+            <input type="file" id="fileInput" class="file-input" accept=".pdf,.jpg,.jpeg,.png" onchange="handleFileSelect(event)">
+
+            <div id="filePreview" style="display: none;">
+                <div class="uploaded-file">
+                    <div class="file-info">
+                        <i class="fa-solid fa-file-pdf file-icon"></i>
+                        <div class="file-details">
+                            <span class="file-name" id="fileName"></span>
+                            <span class="file-size" id="fileSize"></span>
+                        </div>
+                    </div>
+                    <button class="btn-remove" onclick="removeFile()">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+                <button class="btn btn-primary" onclick="uploadCertificate()">
+                    <i class="fa-solid fa-check"></i>
+                    Confirmar Upload
+                </button>
             </div>
         </div>
     </div>
 
     <script>
-        let currentAction = null;
-        let currentEvent = null;
+        let currentEventId = null;
+        let selectedFile = null;
 
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('active');
         }
 
-        function openCheckinModal(eventName, action) {
-            currentEvent = eventName;
-            currentAction = action;
-            const modal = document.getElementById('modal');
-            const title = document.getElementById('modal-title');
-            const message = document.getElementById('modal-message');
-            
-            if (action === 'check-in') {
-                title.textContent = 'Confirmar Check-in';
-                message.textContent = `Deseja fazer check-in no evento "${eventName}"?`;
-            } else {
-                title.textContent = 'Confirmar Check-out';
-                message.textContent = `Deseja fazer check-out do evento "${eventName}"?`;
-            }
-            
-            modal.classList.add('show');
+        function openUploadModal(eventName, eventId) {
+            currentEventId = eventId;
+            document.getElementById('modalTitle').textContent = `Anexar Certificado - ${eventName}`;
+            document.getElementById('uploadModal').classList.add('show');
         }
 
-        function openLogoutModal() {
-            currentAction = 'logout';
-            const modal = document.getElementById('modal');
-            const title = document.getElementById('modal-title');
-            const message = document.getElementById('modal-message');
-            
-            title.textContent = 'Confirmar Logout';
-            message.textContent = 'Deseja realmente sair do sistema?';
-            
-            modal.classList.add('show');
-        }
-
-
-        function closeModal() {
-            const modal = document.getElementById('modal');
-            modal.classList.remove('show');
-            currentAction = null;
-            currentEvent = null;
+        function closeUploadModal() {
+            document.getElementById('uploadModal').classList.remove('show');
+            removeFile();
         }
 
         function closeModalOutside(event) {
-            if (event.target.id === 'modal') {
-                closeModal();
+            if (event.target.id === 'uploadModal') {
+                closeUploadModal();
             }
         }
 
-        function confirmAction() {
-            if (currentAction === 'logout') {
-                window.location.href = 'login.html';
-            } else if (currentAction === 'check-in') {
-                alert(`Check-in realizado com sucesso no evento "${currentEvent}"!`);
-                closeModal();
-            } else if (currentAction === 'check-out') {
-                alert(`Check-out realizado com sucesso no evento "${currentEvent}"!`);
-                closeModal();
-            } else if (currentAction === 'settings') {
-                closeModal();
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('O arquivo deve ter no máximo 5MB');
+                    return;
+                }
+                
+                selectedFile = file;
+                displayFilePreview(file);
             }
         }
 
+        function displayFilePreview(file) {
+            document.getElementById('uploadArea').style.display = 'none';
+            document.getElementById('filePreview').style.display = 'block';
+            
+            document.getElementById('fileName').textContent = file.name;
+            document.getElementById('fileSize').textContent = formatFileSize(file.size);
+            
+            const icon = document.querySelector('.file-icon');
+            if (file.type === 'application/pdf') {
+                icon.className = 'fa-solid fa-file-pdf file-icon';
+            } else {
+                icon.className = 'fa-solid fa-file-image file-icon';
+            }
+        }
+
+        function removeFile() {
+            selectedFile = null;
+            document.getElementById('fileInput').value = '';
+            document.getElementById('uploadArea').style.display = 'block';
+            document.getElementById('filePreview').style.display = 'none';
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+        }
+
+        function uploadCertificate() {
+            if (!selectedFile) {
+                alert('Nenhum arquivo selecionado');
+                return;
+            }
+            
+            // Aqui você implementaria o upload real para o servidor
+            alert(`Certificado "${selectedFile.name}" enviado com sucesso!`);
+            closeUploadModal();
+            
+            // Atualizar a interface para mostrar o certificado anexado
+            location.reload();
+        }
+
+        function viewCertificate(filename) {
+            alert(`Abrindo certificado: ${filename}`);
+            // Aqui você implementaria a visualização do certificado
+        }
+
+        // Drag and drop
+        const uploadArea = document.getElementById('uploadArea');
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragging');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragging');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragging');
+            
+            const file = e.dataTransfer.files[0];
+            if (file) {
+                const input = document.getElementById('fileInput');
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                input.files = dataTransfer.files;
+                handleFileSelect({ target: input });
+            }
+        });
+
+        // Fechar modal com ESC
         document.addEventListener('keydown', function(event) {
             if (event.key === 'Escape') {
-                closeModal();
+                closeUploadModal();
             }
         });
     </script>
