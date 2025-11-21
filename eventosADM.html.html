@@ -31,7 +31,7 @@
             margin-bottom: 32px;
         }
         .logo img {
-            width: 48px;
+            width: 120px;
             margin-bottom: 8px;
         }
         .logo span {
@@ -57,9 +57,10 @@
         }
         .sidebar nav ul li.active a,
         .sidebar nav ul li a:hover {
-            background: #22c55e;
-            color: #fff;
+            background: #22c55e22;
+            color: #22c55e;
         }
+        .sidebar nav a.active, .sidebar nav a:hover { background:#22c55e22; color:#22c55e }
         .main-content {
             flex: 1;
             padding: 0 40px;
@@ -235,17 +236,17 @@
     <div class="container">
         <aside class="sidebar">
             <div class="logo">
-                <img src="logo_if.png" alt="Logo IF">
+                <img src="img/novamarca_iff_160x185-equal.png" alt="Logo IF">
                 <span>Sistema de Eventos</span>
             </div>
             <nav>
                 <ul>
-                    <li><a href="index.html">Dashboard</a></li>
-                    <li class="active"><a href="">Eventos</a></li>
-                    <li><a href="#">Inscritos</a></li>
-                    <li><a href="#">Presença</a></li>
-                    <li><a href="#">Certificados</a></li>
-                    <li><a href="#">Configurações</a></li>
+                    <li><a href="index.html"><i class="fa-solid fa-chart-line"></i>Dashboard</a></li>
+                    <li class="active"><a href="eventosADM.html.html"><i class="fa-solid fa-calendar-days"></i>Eventos</a></li>
+                    <li><a href="inscritos.html"><i class="fa-solid fa-users"></i>Inscritos</a></li>
+                    <li><a href="presenca.html"><i class="fa-solid fa-check"></i>Presença</a></li>
+                    <li><a href="certificado.html" aria-current="page"><i class="fa-solid fa-certificate"></i>&nbsp;Certificados</a></li>
+                    <li><a href="#"><i class="fa-solid fa-gear"></i>Configurações</a></li>
                 </ul>
             </nav>
         </aside>
@@ -261,7 +262,7 @@
                     <h1>Gerenciar Eventos</h1>
                     <p>Crie, edite e organize seus eventos</p>
                     <input type="text" class="search-input" placeholder="Buscar eventos...">
-                    <button class="novo-evento-btn">+ Novo Evento</button>
+                    <a href="cadastrar-evento.html" class="novo-evento-btn">+ Novo Evento</a>
                 </div>
                 <div class="eventos-list">
                     <div class="evento-card">

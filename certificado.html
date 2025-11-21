@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Emitir Certificados</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background:#f6f6f6; font-family:'Inter', Arial, sans-serif; margin:0 }
+    .container { display:flex; min-height:100vh }
+    .sidebar { width:220px; background:#fff; border-right:1px solid #e5e7eb; padding:32px 0 0 0; display:flex; flex-direction:column; align-items:center }
+    .logo { display:flex; flex-direction:column; align-items:center; margin-bottom:32px }
+    .logo img { width:120px; margin-bottom:8px }
+    .logo span { font-weight:600; font-size:15px }
+    .sidebar nav ul { list-style:none; padding:0; width:100% }
+    .sidebar nav ul li { margin-bottom:8px }
+    .sidebar nav ul li a { display:flex; align-items:center; padding:10px 24px; color:#333; text-decoration:none; border-radius:6px; transition:background .2s }
+    .sidebar nav ul li a[aria-current="page"], .sidebar nav ul li a:hover { background:#22c55e22; color:#22c55e }
+    .main-content { flex:1; padding:0 40px }
+    .top-bar { display:flex; justify-content:flex-end; align-items:center; padding:24px 0 0 0; gap:16px }
+    .logout-btn { background:#22c55e; color:#fff; border:none; padding:8px 24px; border-radius:6px; font-weight:500; cursor:pointer; text-decoration:none }
+
+    .page-header { display:flex; align-items:center; justify-content:space-between; margin-top:24px; margin-bottom:18px }
+    .page-header h1 { font-size:1.6rem; font-weight:700; margin:0 }
+    .page-header p { color:#6b7280; margin:0 }
+
+    .panel { background:#fff; border:1px solid #e5e7eb; border-radius:10px; padding:18px; box-shadow:0 6px 24px rgba(0,0,0,0.04) }
+    .controls { display:flex; gap:12px; align-items:center; margin-bottom:14px }
+    .controls select, .controls input { padding:10px 12px; border:1px solid #e5e7eb; border-radius:8px; font-size:1rem }
+
+    .list-item { display:flex; align-items:center; justify-content:space-between; padding:12px; border-radius:8px; border:1px solid #f3f4f6; margin-bottom:8px }
+    .list-item .info { display:flex; gap:12px; align-items:center }
+    .nome { font-weight:600 }
+    .email { color:#6b7280; font-size:0.95rem }
+
+    .btn-primary { background:#22c55e; color:#fff; border:none; padding:10px 18px; border-radius:8px; font-weight:600; cursor:pointer }
+    .btn-primary:hover { background:#16a34a }
+    .btn-outline { background:#fff; border:1px solid #e5e7eb; padding:10px 16px; border-radius:8px; color:#374151; cursor:pointer }
+
+    @media (max-width:900px) { .container { flex-direction:column } .sidebar { width:100%; flex-direction:row; justify-content:space-between; padding:16px } .main-content { padding:0 12px } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <aside class="sidebar">
+      <div class="logo">
+        <img src="img/novamarca_iff_160x185-equal.png" alt="Logo IF">
+        <span>Sistema de Eventos</span>
+      </div>
+      <nav>
+        <ul>
+          <li><a href="index.html"><i class="fa-solid fa-chart-line"></i>&nbsp;Dashboard</a></li>
+          <li><a href="eventosADM.html.html"><i class="fa-solid fa-calendar-days"></i>&nbsp;Eventos</a></li>
+          <li><a href="inscritos.html"><i class="fa-solid fa-users"></i>&nbsp;Inscritos</a></li>
+          <li><a href="presenca.html"><i class="fa-solid fa-check"></i>&nbsp;Presença</a></li>
+          <li><a href="certificado.html" aria-current="page"><i class="fa-solid fa-certificate"></i>&nbsp;Certificados</a></li>
+          <li><a href="#"><i class="fa-solid fa-gear"></i>Configurações</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <main class="main-content" id="main">
+      <header class="top-bar">
+        <a href="login.html" class="logout-btn" aria-label="Sair do sistema"><i class="fa-solid fa-sign-out-alt"></i>&nbsp;Sair</a>
+      </header>
+
+      <section>
+        <div class="page-header">
+          <div>
+            <h1>Certificados</h1>
+            <p>Emita certificados de conclusão para os eventos disponíveis.</p>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="controls">
+            <select id="eventSelect" aria-label="Selecionar evento para emitir certificados">
+              <option value="all">-- Selecionar Evento --</option>
+            </select>
+            <input id="searchInput" type="text" placeholder="Buscar por nome ou email..." aria-label="Buscar participante">
+            <div style="margin-left:auto; display:flex; gap:8px;">
+              <button id="emitirAllBtn" class="btn-outline" aria-label="Emitir para todos">Emitir para todos</button>
+              <button id="emitirBtn" class="btn-primary" aria-label="Emitir certificados selecionados">Emitir Certificados</button>
+            </div>
+          </div>
+
+          <div id="lista" aria-live="polite">
+            <p style="color:#6b7280">Selecione um evento para carregar participantes.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    // Dados de exemplo (substituir por dados reais do servidor quando disponível)
+    const eventos = [
+      { id: 'e1', nome: 'Semana de Tecnologia 2024' },
+      { id: 'e2', nome: 'Workshop de React' },
+      { id: 'e3', nome: 'Palestra sobre IA' }
+    ];
+
+    const participantes = [
+      { id: 'u1', nome: 'João Silva', email: 'joao.silva@example.com', evento: 'e1' },
+      { id: 'u2', nome: 'Maria Santos', email: 'maria.santos@example.com', evento: 'e2' },
+      { id: 'u3', nome: 'Pedro Costa', email: 'pedro.costa@example.com', evento: 'e1' },
+      { id: 'u4', nome: 'Ana Oliveira', email: 'ana.oliveira@example.com', evento: 'e3' },
+      { id: 'u5', nome: 'Carlos Ferreira', email: 'carlos.ferreira@example.com', evento: 'e2' }
+    ];
+
+    const eventSelect = document.getElementById('eventSelect');
+    const lista = document.getElementById('lista');
+    const searchInput = document.getElementById('searchInput');
+    const emitirBtn = document.getElementById('emitirBtn');
+    const emitirAllBtn = document.getElementById('emitirAllBtn');
+
+    // Popular select de eventos
+    eventos.forEach(ev => {
+      const opt = document.createElement('option'); opt.value = ev.id; opt.textContent = ev.nome; eventSelect.appendChild(opt);
+    });
+
+    function renderLista(eventId, filterText = ''){
+      lista.innerHTML = '';
+      if(!eventId || eventId === 'all'){
+        lista.innerHTML = '<p style="color:#6b7280">Selecione um evento para carregar participantes.</p>';
+        return;
+      }
+
+      const itens = participantes.filter(p => p.evento === eventId && (p.nome.toLowerCase().includes(filterText) || p.email.toLowerCase().includes(filterText)));
+      if(itens.length === 0){
+        lista.innerHTML = '<p style="color:#6b7280">Nenhum participante encontrado para este evento.</p>';
+        return;
+      }
+
+      itens.forEach(p => {
+        const el = document.createElement('div'); el.className = 'list-item';
+        const left = document.createElement('div'); left.className = 'info';
+        const avatar = document.createElement('div'); avatar.innerHTML = '<i class="fa-solid fa-user" style="color:#22c55e"></i>';
+        const names = document.createElement('div'); names.innerHTML = `<div class="nome">${p.nome}</div><div class="email">${p.email}</div>`;
+        left.appendChild(avatar); left.appendChild(names);
+
+        const right = document.createElement('div'); right.style.display = 'flex'; right.style.alignItems = 'center'; right.style.gap = '12px';
+        const checkbox = document.createElement('input'); checkbox.type = 'checkbox'; checkbox.value = p.id; checkbox.setAttribute('aria-label', 'Selecionar participante para emissão');
+        right.appendChild(checkbox);
+
+        el.appendChild(left); el.appendChild(right);
+        lista.appendChild(el);
+      });
+    }
+
+    eventSelect.addEventListener('change', ()=>{ renderLista(eventSelect.value, searchInput.value.trim().toLowerCase()) });
+    searchInput.addEventListener('input', ()=>{ renderLista(eventSelect.value, searchInput.value.trim().toLowerCase()) });
+
+    emitirAllBtn.addEventListener('click', ()=>{
+      if(!eventSelect.value || eventSelect.value === 'all'){ alert('Selecione um evento primeiro.'); return; }
+      const itens = participantes.filter(p => p.evento === eventSelect.value);
+      if(itens.length === 0){ alert('Nenhum participante encontrado.'); return; }
+      // Simulação de emissão
+      alert(`Certificados emitidos (simulação) para ${itens.length} participantes.`);
+    });
+
+    emitirBtn.addEventListener('click', ()=>{
+      if(!eventSelect.value || eventSelect.value === 'all'){ alert('Selecione um evento primeiro.'); return; }
+      const checked = Array.from(lista.querySelectorAll('input[type="checkbox"]:checked')).map(i => i.value);
+      if(checked.length === 0){ alert('Selecione ao menos um participante.'); return; }
+      // Simulação de emissão
+      alert(`Certificados emitidos (simulação) para ${checked.length} participante(s).`);
+    });
+  </script>
+</body>
+</html>
