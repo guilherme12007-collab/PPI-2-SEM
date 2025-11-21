@@ -77,7 +77,7 @@
                     <li><a href="inscritos.html"><i class="fa-solid fa-users"></i>Inscritos</a></li>
                     <li><a href="presenca.html"><i class="fa-solid fa-check"></i>Presença</a></li>
                     <li><a href="certificado.html"><i class="fa-solid fa-certificate"></i>Certificados</a></li>
-                    <li><a href="#"><i class="fa-solid fa-gear"></i>Configurações</a></li>
+                    <li><a href="configuracoes.html"><i class="fa-solid fa-gear"></i>Configurações</a></li>
                 </ul>
             </nav>
         </aside>
@@ -146,10 +146,28 @@
     </div>
 
     <script>
-        document.getElementById('form-cadastrar').addEventListener('submit', function(e){
-            e.preventDefault();
-            alert('Evento criado (simulação)');
-        });
+            // Persistir novo evento usando localStorage helper
+            (function(){
+                const form = document.getElementById('form-cadastrar');
+                form.addEventListener('submit', function(e){
+                    e.preventDefault();
+                    const novo = {
+                        nome: document.getElementById('nome').value.trim(),
+                        data: document.getElementById('data').value,
+                        hora: document.getElementById('hora').value,
+                        local: document.getElementById('local').value.trim(),
+                        descricao: document.getElementById('descricao').value.trim(),
+                        capacidade: document.getElementById('capacidade').value || ''
+                    };
+                    if(window.PPIEvents && typeof window.PPIEvents.add === 'function'){
+                        window.PPIEvents.add(novo);
+                        alert('Evento criado com sucesso.');
+                        window.location.href = 'eventosADM.html.html';
+                        return;
+                    }
+                    alert('Evento criado (simulação)');
+                });
+            })();
     </script>
 </body>
 </html>

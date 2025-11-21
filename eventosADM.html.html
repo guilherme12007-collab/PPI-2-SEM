@@ -246,7 +246,7 @@
                     <li><a href="inscritos.html"><i class="fa-solid fa-users"></i>Inscritos</a></li>
                     <li><a href="presenca.html"><i class="fa-solid fa-check"></i>Presença</a></li>
                     <li><a href="certificado.html" aria-current="page"><i class="fa-solid fa-certificate"></i>&nbsp;Certificados</a></li>
-                    <li><a href="#"><i class="fa-solid fa-gear"></i>Configurações</a></li>
+                    <li><a href="configuracoes.html"><i class="fa-solid fa-gear"></i>Configurações</a></li>
                 </ul>
             </nav>
         </aside>
@@ -265,47 +265,45 @@
                     <a href="cadastrar-evento.html" class="novo-evento-btn">+ Novo Evento</a>
                 </div>
                 <div class="eventos-list">
-                    <div class="evento-card">
-                        <div class="evento-info">
-                            <h2>Semana Acadêmica de Tecnologia</h2>
-                            <p>Palestras e workshops sobre tecnologia</p>
-                            <span>Data: 15-20 Dez</span><br>
-                            <span>Inscritos: 250</span>
-                        </div>
-                        <div class="evento-status ativo">Ativo</div>
-                        <div class="evento-actions">
-                            <button class="editar-btn">Editar</button>
-                            <button class="excluir-btn">Excluir</button>
-                        </div>
-                    </div>
-                    <div class="evento-card">
-                        <div class="evento-info">
-                            <h2>Mostra de Ciências</h2>
-                            <p>Apresentação de projetos científicos</p>
-                            <span>Data: 10 Jan</span><br>
-                            <span>Inscritos: 180</span>
-                        </div>
-                        <div class="evento-status programado">Programado</div>
-                        <div class="evento-actions">
-                            <button class="editar-btn">Editar</button>
-                            <button class="excluir-btn">Excluir</button>
-                        </div>
-                    </div>
-                    <div class="evento-card">
-                        <div class="evento-info">
-                            <h2>Simpósio de Agronomia</h2>
-                            <p>Práticas agrícolas sustentáveis</p>
-                            <span>Data: 5-7 Fev</span><br>
-                            <span>Inscritos: 320</span>
-                        </div>
-                        <div class="evento-status programado">Programado</div>
-                        <div class="evento-actions">
-                            <button class="editar-btn">Editar</button>
-                            <button class="excluir-btn">Excluir</button>
-                        </div>
-                    </div>
+                                <div id="eventosContainer"></div>
                 </div>
             </section>
+            <script src="js/events.js"></script>
+            <script>
+                // Renderizar eventos dinamicamente a partir do localStorage
+                (function(){
+                    const container = document.getElementById('eventosContainer');
+                    const search = document.querySelector('.search-input');
+
+                    function render(filtered){
+                        container.innerHTML = '';
+                        const list = (filtered || window.PPIEvents.load());
+                        if(!list || list.length === 0){ container.innerHTML = '<p style="color:#6b7280">Nenhum evento encontrado.</p>'; return; }
+                        list.forEach(ev => {
+                            const card = document.createElement('div'); card.className = 'evento-card';
+                            const info = document.createElement('div'); info.className = 'evento-info';
+                            info.innerHTML = `<h2>${ev.nome}</h2><p>${ev.descricao || ''}</p><span>Data: ${ev.data || ''}</span><br><span>Local: ${ev.local || ''}</span>`;
+                            const status = document.createElement('div'); status.className = 'evento-status programado';
+                            status.textContent = ev.data ? 'Programado' : 'Ativo';
+                            const actions = document.createElement('div'); actions.className = 'evento-actions';
+                            const btnEdit = document.createElement('button'); btnEdit.className = 'editar-btn'; btnEdit.textContent = 'Editar'; btnEdit.addEventListener('click', ()=>{ window.location.href = 'configuracoes.html'; localStorage.setItem('ppi_edit_event', ev.id); });
+                            const btnDelete = document.createElement('button'); btnDelete.className = 'excluir-btn'; btnDelete.textContent = 'Excluir'; btnDelete.addEventListener('click', ()=>{ if(confirm('Excluir evento?')){ window.PPIEvents.remove(ev.id); render(); } });
+                            actions.appendChild(btnEdit); actions.appendChild(btnDelete);
+                            card.appendChild(info); card.appendChild(status); card.appendChild(actions);
+                            container.appendChild(card);
+                        });
+                    }
+
+                    search.addEventListener('input', ()=>{
+                        const q = search.value.trim().toLowerCase();
+                        const all = window.PPIEvents.load();
+                        const filtered = all.filter(e => e.nome.toLowerCase().includes(q) || (e.descricao||'').toLowerCase().includes(q));
+                        render(filtered);
+                    });
+
+                    render();
+                })();
+            </script>
         </main>
     </div>
 </body>

@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Configurações - Sistema de Eventos</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #f6f7f9; color: #222; margin: 0 }
+    .sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: 220px; background: #fff; border-right: 1px solid #e5e7eb; padding: 2rem 1rem 1rem 1rem; display: flex; flex-direction: column; gap: 2rem; min-height: 100vh; z-index: 10 }
+    .sidebar .logo { width: 120px; margin-bottom: 2rem; display: block; margin-left: auto; margin-right: auto }
+    .sidebar nav { display:flex; flex-direction: column; gap: 1rem }
+    .sidebar nav a { color: #222; text-decoration: none; font-weight: 600; padding: 0.7rem 1rem; border-radius: 8px; display:flex; align-items:center; gap:0.7rem; transition: background 0.2s }
+    .sidebar nav a[aria-current="page"], .sidebar nav a:hover { background: #22c55e22; color: #22c55e }
+    .main-content { margin-left: 240px; padding: 2rem 2rem 2rem 2rem; min-height: 100vh }
+    .page-title { font-size: 1.6rem; font-weight:700; color:#125c2b; margin-bottom:6px }
+    .muted { color:#666 }
+
+    .grid { display: grid; grid-template-columns: 1fr 380px; gap: 20px }
+    .panel { background:#fff; border-radius:12px; padding:18px; border:1px solid #e5e7eb; box-shadow:0 4px 24px rgba(0,0,0,0.05) }
+
+    .evento-card { display:flex; justify-content:space-between; align-items:center; padding:12px; border:1px solid #f3f4f6; border-radius:8px; margin-bottom:10px }
+    .evento-info h3 { margin:0; font-size:1.05rem; font-weight:700 }
+    .evento-actions { display:flex; gap:8px }
+    .btn { padding:8px 12px; border-radius:8px; border:1px solid #e5e7eb; background:#fff; cursor:pointer; text-decoration:none; color:#374151; font-weight:600 }
+    .btn-primary { background:#22c55e; color:#fff; border:none }
+    .btn-danger { background:#fee2e2; color:#ef4444; border:1px solid #fecaca }
+
+    .form-group { margin-bottom:10px }
+    .form-group label { display:block; font-weight:600; margin-bottom:6px }
+    .form-group input, .form-group textarea, .form-group select { width:100%; padding:10px; border:1px solid #e5e7eb; border-radius:8px }
+
+    @media (max-width:900px) { .main-content { margin-left: 0; padding:1rem } .grid { grid-template-columns: 1fr } }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <img src="img/novamarca_iff_160x185-equal.png" alt="iff" class="logo">
+    <nav>
+      <a href="index.html"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+      <a href="eventosADM.html.html"><i class="fa-solid fa-calendar-days"></i> Eventos</a>
+      <a href="inscritos.html"><i class="fa-solid fa-users"></i> Inscritos</a>
+      <a href="presenca.html"><i class="fa-solid fa-check"></i> Presença</a>
+      <a href="certificado.html"><i class="fa-solid fa-certificate"></i> Certificados</a>
+      <a href="configuracoes.html" aria-current="page"><i class="fa-solid fa-cog"></i> Configurações</a>
+      <a href="login.html"><i class="fa-solid fa-sign-out-alt"></i> Sair</a>
+    </nav>
+  </div>
+
+  <div class="main-content">
+    <div class="page-title">Configurações</div>
+    <div class="muted">Gerencie seus eventos e edite o perfil do administrador</div>
+
+    <div class="grid" style="margin-top:18px">
+      <div>
+        <div class="panel">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <div>
+              <h2 style="margin:0;font-size:1.1rem">Meus Eventos</h2>
+              <div class="muted">Edite ou exclua eventos que você criou</div>
+            </div>
+            <a href="cadastrar-evento.html" class="btn btn-primary">+ Novo Evento</a>
+          </div>
+
+          <div id="eventList">
+            <!-- eventos serão renderizados aqui -->
+          </div>
+        </div>
+
+        <div class="panel" style="margin-top:16px">
+          <h3 style="margin-top:0">Editar Evento</h3>
+          <form id="editEventForm">
+            <input type="hidden" id="editEventId">
+            <div class="form-group">
+              <label for="editNome">Nome</label>
+              <input id="editNome" type="text">
+            </div>
+            <div style="display:flex;gap:8px">
+              <div style="flex:1" class="form-group"><label for="editData">Data</label><input id="editData" type="date"></div>
+              <div style="flex:1" class="form-group"><label for="editHora">Hora</label><input id="editHora" type="time"></div>
+            </div>
+            <div class="form-group"><label for="editLocal">Local</label><input id="editLocal" type="text"></div>
+            <div class="form-group"><label for="editDescricao">Descrição</label><textarea id="editDescricao" rows="3"></textarea></div>
+            <div style="display:flex;gap:8px"><button type="submit" class="btn btn-primary">Salvar alterações</button><button type="button" id="cancelEdit" class="btn">Cancelar</button></div>
+          </form>
+        </div>
+      </div>
+
+      <aside>
+        <div class="panel">
+          <h3 style="margin-top:0">Perfil do Administrador</h3>
+          <form id="profileForm">
+            <div class="form-group"><label for="adminNome">Nome</label><input id="adminNome" type="text"></div>
+            <div class="form-group"><label for="adminEmail">Email</label><input id="adminEmail" type="email"></div>
+            <div class="form-group"><label for="adminSenha">Alterar senha</label><input id="adminSenha" type="password" placeholder="Nova senha (opcional)"></div>
+            <div style="display:flex;gap:8px"><button type="submit" class="btn btn-primary">Salvar perfil</button></div>
+          </form>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <script>
+    // Carregar dados via localStorage
+    let eventos = [];
+    let admin = { nome: 'Administrador', email: 'admin@example.com' };
+    const eventList = document.getElementById('eventList');
+    const editForm = document.getElementById('editEventForm');
+    const profileForm = document.getElementById('profileForm');
+
+    function renderEvents(){
+      eventList.innerHTML = '';
+      eventos.forEach(ev => {
+        const card = document.createElement('div'); card.className = 'evento-card';
+        const info = document.createElement('div'); info.className = 'evento-info';
+        info.innerHTML = `<h3>${ev.nome}</h3><div class="muted">${ev.data} • ${ev.local}</div><div style="margin-top:6px;color:#374151">${ev.descricao}</div>`;
+        const actions = document.createElement('div'); actions.className = 'evento-actions';
+        const btnEdit = document.createElement('button'); btnEdit.className = 'btn'; btnEdit.textContent = 'Editar'; btnEdit.addEventListener('click', ()=> startEdit(ev.id));
+        const btnDelete = document.createElement('button'); btnDelete.className = 'btn btn-danger'; btnDelete.textContent = 'Excluir'; btnDelete.addEventListener('click', ()=> deleteEvent(ev.id));
+        actions.appendChild(btnEdit); actions.appendChild(btnDelete);
+        card.appendChild(info); card.appendChild(actions);
+        eventList.appendChild(card);
+      });
+    }
+
+    function startEdit(id){
+      const ev = eventos.find(e => e.id === id); if(!ev) return;
+      document.getElementById('editEventId').value = ev.id;
+      document.getElementById('editNome').value = ev.nome;
+      document.getElementById('editData').value = ev.data;
+      document.getElementById('editHora').value = ev.hora || '';
+      document.getElementById('editLocal').value = ev.local || '';
+      document.getElementById('editDescricao').value = ev.descricao || '';
+      window.scrollTo({ top: document.querySelector('#editEventForm').offsetTop - 80, behavior: 'smooth' });
+    }
+
+    function deleteEvent(id){
+      if(!confirm('Deseja realmente excluir este evento?')) return;
+      // remover evento do localStorage 
+      if(window.PPIEvents){ window.PPIEvents.remove(id); eventos = window.PPIEvents.load(); renderEvents(); alert('Evento excluído (simulação).'); return; }
+      eventos = eventos.filter(e => e.id !== id);
+      renderEvents();
+      alert('Evento excluído');
+    }
+
+    editForm.addEventListener('submit', (e)=>{
+      e.preventDefault();
+      const id = document.getElementById('editEventId').value;
+      const idx = eventos.findIndex(ev => ev.id === id);
+      if(idx === -1) { alert('Evento não encontrado'); return; }
+      eventos[idx].nome = document.getElementById('editNome').value;
+      eventos[idx].data = document.getElementById('editData').value;
+      eventos[idx].hora = document.getElementById('editHora').value;
+      eventos[idx].local = document.getElementById('editLocal').value;
+      eventos[idx].descricao = document.getElementById('editDescricao').value;
+      // salvar via helper
+      if(window.PPIEvents){ window.PPIEvents.update(eventos[idx]); eventos = window.PPIEvents.load(); }
+      renderEvents();
+      alert('Evento atualizado (simulação).');
+    });
+
+    document.getElementById('cancelEdit').addEventListener('click', ()=>{ editForm.reset(); document.getElementById('editEventId').value = ''; });
+
+    profileForm.addEventListener('submit', (e)=>{
+      e.preventDefault();
+      admin.nome = document.getElementById('adminNome').value;
+      admin.email = document.getElementById('adminEmail').value;
+      const senha = document.getElementById('adminSenha').value;
+      // Em produção: enviar para servidor e lidar com validação/atualização
+      alert('Perfil atualizado.');
+      document.getElementById('adminSenha').value = '';
+    });
+
+    // Inicialização
+    function init(){
+      // carregar eventos de localStorage se disponível
+      if(window.PPIEvents){ eventos = window.PPIEvents.load(); } 
+      renderEvents();
+      document.getElementById('adminNome').value = admin.nome;
+      document.getElementById('adminEmail').value = admin.email;
+
+      // Se o usuário clicou em editar a partir da página de eventos, preencher form
+      const editId = localStorage.getItem('ppi_edit_event');
+      if(editId){ localStorage.removeItem('ppi_edit_event'); startEdit(editId); }
+    }
+
+    // carregar helper
+    (function(){
+      const s = document.createElement('script'); s.src = 'js/events.js'; s.onload = init; document.body.appendChild(s);
+    })();
+  </script>
+</body>
+</html>

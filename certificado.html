@@ -55,7 +55,7 @@
           <li><a href="inscritos.html"><i class="fa-solid fa-users"></i>&nbsp;Inscritos</a></li>
           <li><a href="presenca.html"><i class="fa-solid fa-check"></i>&nbsp;Presença</a></li>
           <li><a href="certificado.html" aria-current="page"><i class="fa-solid fa-certificate"></i>&nbsp;Certificados</a></li>
-          <li><a href="#"><i class="fa-solid fa-gear"></i>Configurações</a></li>
+          <li><a href="configuracoes.html"><i class="fa-solid fa-gear"></i>Configurações</a></li>
         </ul>
       </nav>
     </aside>
@@ -94,12 +94,8 @@
   </div>
 
   <script>
-    // Dados de exemplo (substituir por dados reais do servidor quando disponível)
-    const eventos = [
-      { id: 'e1', nome: 'Semana de Tecnologia 2024' },
-      { id: 'e2', nome: 'Workshop de React' },
-      { id: 'e3', nome: 'Palestra sobre IA' }
-    ];
+    // Carregar eventos via helper localStorage
+    let eventos = [];
 
     const participantes = [
       { id: 'u1', nome: 'João Silva', email: 'joao.silva@example.com', evento: 'e1' },
@@ -116,9 +112,12 @@
     const emitirAllBtn = document.getElementById('emitirAllBtn');
 
     // Popular select de eventos
-    eventos.forEach(ev => {
-      const opt = document.createElement('option'); opt.value = ev.id; opt.textContent = ev.nome; eventSelect.appendChild(opt);
-    });
+    // populará após carregar helper
+    
+    function populateSelect(){
+      eventSelect.innerHTML = '<option value="all">-- Selecionar Evento --</option>';
+      (eventos||[]).forEach(ev => { const opt = document.createElement('option'); opt.value = ev.id; opt.textContent = ev.nome; eventSelect.appendChild(opt); });
+    }
 
     function renderLista(eventId, filterText = ''){
       lista.innerHTML = '';
@@ -151,6 +150,12 @@
 
     eventSelect.addEventListener('change', ()=>{ renderLista(eventSelect.value, searchInput.value.trim().toLowerCase()) });
     searchInput.addEventListener('input', ()=>{ renderLista(eventSelect.value, searchInput.value.trim().toLowerCase()) });
+
+    // carregar helper e inicializar
+    (function(){
+      const s = document.createElement('script'); s.src = 'js/events.js'; s.onload = ()=>{ eventos = window.PPIEvents.load(); populateSelect(); };
+      document.body.appendChild(s);
+    })();
 
     emitirAllBtn.addEventListener('click', ()=>{
       if(!eventSelect.value || eventSelect.value === 'all'){ alert('Selecione um evento primeiro.'); return; }
