@@ -14,6 +14,7 @@ $error = null;
 try {
     $pdo = getDbConnection();
 
+    // filtra eventos já encerrados (não mostrar). eventos sem data_fim ou com data_fim >= hoje aparecem.
     $sql = "
         SELECT
             e.*,
@@ -24,6 +25,7 @@ try {
         JOIN evento e ON e.id_evento = i.id_evento
         JOIN usuario org ON org.id_usuario = e.id_organizador
         WHERE i.id_usuario = :uid
+          AND (e.data_fim IS NULL OR e.data_fim >= CURRENT_DATE)
         ORDER BY e.data_inicio DESC
     ";
     $stmt = $pdo->prepare($sql);
@@ -48,9 +50,8 @@ try {
         <ul class="sidebar-menu">
             <li><a href="index_participante.php"><i class="fa-solid fa-table-cells"></i><span>Mural de Eventos</span></a></li>
             <li><a href="#" class="active"><i class="fa-solid fa-calendar-check"></i><span>Meus Eventos</span></a></li>
-            <li><a href="certificados.html"><i class="fa-solid fa-certificate"></i><span>Meus Certificados</span></a></li>
-            <li><a href="perfil.html"><i class="fa-solid fa-user"></i><span>Meu Perfil</span></a></li>
-            <li><a href="configuracoes.html"><i class="fa-solid fa-gear"></i><span>Configurações</span></a></li>
+            <li><a href="meus_certificados_participante.html"><i class="fa-solid fa-certificate"></i><span>Meus Certificados</span></a></li>
+            <li><a href="perfil.php"><i class="fa-solid fa-user"></i><span>Meu Perfil</span></a></li>
         </ul>
     </aside>
 
@@ -88,33 +89,58 @@ try {
                         <p class="event-description">Você ainda não se inscreveu em nenhum evento.</p>
                     </div>
                 <?php else: ?>
-                    <?php foreach ($events as $ev):
+                    <?php 
+                    $today = new DateTimeImmutable('today');
+                    foreach ($events as $ev):
                         $titulo = htmlspecialchars($ev['titulo'], ENT_QUOTES, 'UTF-8');
                         $descricao = htmlspecialchars($ev['descricao'], ENT_QUOTES, 'UTF-8');
                         $local = htmlspecialchars($ev['local'], ENT_QUOTES, 'UTF-8');
                         $organizador = htmlspecialchars($ev['organizador'], ENT_QUOTES, 'UTF-8');
                         $inscritos = (int) $ev['inscritos'];
                         $carga = (int) $ev['carga_horaria'];
-                        $status = htmlspecialchars($ev['status'], ENT_QUOTES, 'UTF-8');
-                        $start = $ev['data_inicio'] ? date('d/m/Y', strtotime($ev['data_inicio'])) : '';
-                        $end = $ev['data_fim'] ? date('d/m/Y', strtotime($ev['data_fim'])) : '';
-                        $dateText = $end ? "{$start} a {$end}" : $start;
+                        $statusDb = isset($ev['status']) ? $ev['status'] : 'Aberto';
+                        $start = !empty($ev['data_inicio']) ? new DateTimeImmutable($ev['data_inicio']) : null;
+                        $end = !empty($ev['data_fim']) ? new DateTimeImmutable($ev['data_fim']) : null;
+                        $dateStartText = $start ? $start->format('d/m/Y') : '';
+                        $dateEndText = $end ? $end->format('d/m/Y') : '';
+                        $dateText = $dateEndText ? "{$dateStartText} a {$dateEndText}" : $dateStartText;
 
-                        // mapeia status para classes de badge existentes no CSS
-                        if ($status === 'Aberto') {
-                            $badgeClass = 'badge-andamento';
-                        } elseif ($status === 'Encerrado') {
-                            $badgeClass = 'badge-finalizado';
-                        } elseif ($status === 'Cancelado') {
-                            $badgeClass = 'badge-breve';
+                        // determina estado com base nas datas
+                        $notStarted = $start ? ($today < $start) : false;
+                        $inProgress = false;
+                        if ($start && $end) {
+                            $inProgress = ($today >= $start && $today <= $end);
+                        } elseif ($start && !$end) {
+                            $inProgress = ($today >= $start);
+                        } elseif (!$start && $end) {
+                            $inProgress = ($today <= $end);
                         } else {
+                            $inProgress = true; // sem datas, assume disponível
+                        }
+
+                        // mapeia badge/class e label
+                        if ($notStarted) {
                             $badgeClass = 'badge-breve';
+                            $statusLabel = 'Em breve';
+                        } elseif ($inProgress) {
+                            $badgeClass = 'badge-andamento';
+                            $statusLabel = 'Em andamento';
+                        } else {
+                            // fallback para status do DB
+                            if ($statusDb === 'Encerrado') {
+                                $badgeClass = 'badge-finalizado';
+                            } elseif ($statusDb === 'Cancelado') {
+                                $badgeClass = 'badge-breve';
+                            } else {
+                                $badgeClass = 'badge-andamento';
+                            }
+                            $statusLabel = $statusDb;
                         }
                     ?>
-                    <div class="event-card">
+                    <div class="event-card" aria-data-event-id="<?php echo (int)$ev['id_evento']; ?>">
                         <div class="event-header">
                             <h2 class="event-title"><?php echo $titulo; ?></h2>
-                            <span class="event-badge <?php echo $badgeClass; ?>"><?php echo $status; ?></span>
+                            <span class="event-badge <?php echo $badgeClass; ?>"><?php echo htmlspecialchars($statusLabel, ENT_QUOTES, 'UTF-8'); ?></span>
                         </div>
                         <p class="event-description"><?php echo $descricao; ?></p>
                         <div class="event-info">
@@ -126,8 +152,21 @@ try {
                             <div class="info-item"><i class="fa-solid fa-calendar-plus"></i><span>Inscrito em: <?php echo date('d/m/Y H:i', strtotime($ev['data_inscricao'])); ?></span></div>
                         </div>
                         <div class="event-actions">
-                            <button class="btn btn-primary" onclick="openCheckinModal('<?php echo $titulo; ?>','check-in')"><i class="fa-solid fa-arrow-right"></i> Fazer Check-in</button>
-                            <button class="btn btn-secondary" onclick="openCheckinModal('<?php echo $titulo; ?>','check-out')"><i class="fa-solid fa-arrow-left"></i> Fazer Check-out</button>
+                            <?php if ($inProgress): ?>
+                                <!-- evento em andamento: permite check-in/out -->
+                                <button class="btn btn-primary"
+                                    onclick='openCheckinModal(<?php echo json_encode($titulo); ?>, <?php echo json_encode('check-in'); ?>, <?php echo (int)$ev['id_evento']; ?>)'>
+                                    <i class="fa-solid fa-arrow-right"></i> Fazer Check-in
+                                </button>
+                                <button class="btn btn-secondary"
+                                    onclick='openCheckinModal(<?php echo json_encode($titulo); ?>, <?php echo json_encode('check-out'); ?>, <?php echo (int)$ev['id_evento']; ?>)'>
+                                    <i class="fa-solid fa-arrow-left"></i> Fazer Check-out
+                                </button>
+                            <?php else: ?>
+                                <!-- evento ainda não começou: não permite check-in (botões desabilitados/informativos) -->
+                                <button class="btn btn-primary" disabled><i class="fa-solid fa-clock"></i> Check-in disponível em <?php echo $start ? $start->format('d/m/Y') : '—'; ?></button>
+                                <button class="btn btn-secondary" disabled><i class="fa-solid fa-arrow-left"></i> Fazer Check-out</button>
+                            <?php endif; ?>
                         </div>
                     </div>
                     <?php endforeach; ?>
@@ -150,12 +189,14 @@ try {
     <script>
         let currentAction = null;
         let currentEvent = null;
+        let currentEventId = null;
 
         function toggleSidebar(){ document.getElementById('sidebar').classList.toggle('active'); }
 
-        function openCheckinModal(eventName, action){
+        function openCheckinModal(eventName, action, eventId){
             currentEvent = eventName;
             currentAction = action;
+            currentEventId = eventId;
             const modal = document.getElementById('modal');
             const title = document.getElementById('modal-title');
             const message = document.getElementById('modal-message');
@@ -164,13 +205,41 @@ try {
             modal.classList.add('show');
         }
 
-        function closeModal(){ document.getElementById('modal').classList.remove('show'); currentAction = null; currentEvent = null; }
+        function closeModal(){ document.getElementById('modal').classList.remove('show'); currentAction = null; currentEvent = null; currentEventId = null; }
+
         function closeModalOutside(e){ if (e.target.id === 'modal') closeModal(); }
-        function confirmAction(){
-            if (currentAction === 'logout') { window.location.href = 'login.php'; return; }
-            alert(`${currentAction === 'check-in' ? 'Check-in' : 'Check-out'} realizado com sucesso no evento "${currentEvent}"!`);
-            closeModal();
+
+        async function confirmAction(){
+            if (!currentEventId || !currentAction) { closeModal(); return; }
+            // chama endpoint server-side que valida IP e faz registro
+            try {
+                const res = await fetch('process/checkin.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ event_id: currentEventId, action: currentAction })
+                });
+                const text = await res.text();
+                let data;
+                try { data = JSON.parse(text); } catch(e) {
+                    alert('Resposta inválida do servidor: ' + text);
+                    closeModal();
+                    return;
+                }
+
+                if (res.ok && data.success) {
+                    alert(data.message || 'Operação concluída');
+                } else {
+                    alert(data.error || 'Erro na operação' + (data.message ? '\n' + data.message : ''));
+                }
+            } catch (err) {
+                alert('Erro de comunicação: ' + (err.message || err));
+            } finally {
+                closeModal();
+                // opcional: recarregar para atualizar status/visualização
+                // location.reload();
+            }
         }
+
         document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
     </script>
     

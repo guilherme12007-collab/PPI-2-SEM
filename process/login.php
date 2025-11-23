@@ -70,9 +70,9 @@ function finalizeLogin($usuario) {
 
     // Define o redirecionamento com base no perfil
     if ($usuario['tipo_perfil'] === 'Organizador') {
-        header('Location: ../public/dashboard_organizador.php');
+        header('Location: ../index_organizador.php');
     } else {
-        header('Location: ../public/mural_eventos.php'); 
+        header('Location: ../index_participante.php'); 
     }
     exit();
 }

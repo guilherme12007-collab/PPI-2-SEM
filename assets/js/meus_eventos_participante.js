@@ -51,7 +51,7 @@ let currentAction = null;
 
         function confirmAction() {
             if (currentAction === 'logout') {
-                window.location.href = 'login.html';
+                window.location.href = 'login.php';
             } else if (currentAction === 'check-in') {
                 alert(`Check-in realizado com sucesso no evento "${currentEvent}"!`);
                 closeModal();

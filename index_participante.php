@@ -44,27 +44,21 @@ try {
         </a>
       </li>
       <li>
-        <a href="meus_eventos_participante.html">
+        <a href="meus_eventos_participante.php">
           <i class="fa-solid fa-calendar-check"></i>
           <span>Meus Eventos</span>
         </a>
       </li>
       <li>
-        <a href="certificados.html">
+        <a href="meus_certificados_participante.html">
           <i class="fa-solid fa-certificate"></i>
           <span>Meus Certificados</span>
         </a>
       </li>
       <li>
-        <a href="perfil.html">
+        <a href="perfil.php">
           <i class="fa-solid fa-user"></i>
           <span>Meu Perfil</span>
-        </a>
-      </li>
-      <li>
-        <a href="configuracoes.html">
-          <i class="fa-solid fa-gear"></i>
-          <span>Configurações</span>
         </a>
       </li>
     </ul>
@@ -82,7 +76,7 @@ try {
         <span class="system-title">Sistema de Eventos</span>
       </div>
       <div class="header-right">
-        <a href="login.html" class="btn-logout">
+        <a href="login.php" class="btn-logout">
           <i class="fa-solid fa-right-from-bracket"></i>
           <span>Logout</span>
         </a>
