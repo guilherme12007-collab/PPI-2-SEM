@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Presença</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background:#f6f6f6; font-family:'Inter', Arial, sans-serif }
+        .container { display:flex; min-height:100vh }
+        .sidebar { width:220px; background:#fff; border-right:1px solid #e5e7eb; padding:32px 0 0 0; display:flex; flex-direction:column; align-items:center }
+        .logo { display:flex; flex-direction:column; align-items:center; margin-bottom:32px }
+        .logo img { width:120px; margin-bottom:8px }
+        .logo span { font-weight:600; font-size:15px }
+        .sidebar nav ul { list-style:none; padding:0; width:100% }
+        .sidebar nav ul li { margin-bottom:8px }
+        .sidebar nav ul li a { display:flex; align-items:center; padding:10px 24px; color:#333; text-decoration:none; border-radius:6px; transition:background .2s }
+        .sidebar nav ul li.active a, .sidebar nav ul li a:hover { background:#22c55e22; color:#22c55e }
+        .sidebar nav a.active, .sidebar nav a:hover { background:#22c55e22; color:#22c55e }
+        .main-content { flex:1; padding:0 40px }
+        .top-bar { display:flex; justify-content:flex-end; align-items:center; padding:24px 0 0 0; gap:16px }
+        .logout-btn { background:#22c55e; color:#fff; border:none; padding:8px 24px; border-radius:6px; font-weight:500; cursor:pointer }
+        .page-header { display:flex; align-items:center; justify-content:space-between; margin-top:24px; margin-bottom:18px }
+        .page-header h1 { font-size:1.6rem; font-weight:700; margin:0 }
+        .page-header p { color:#6b7280; margin:0 }
+
+        .panel { background:#fff; border:1px solid #e5e7eb; border-radius:10px; padding:18px; box-shadow:0 6px 24px rgba(0,0,0,0.04) }
+        .controls { display:flex; gap:12px; align-items:center; margin-bottom:14px }
+        .controls select, .controls input { padding:10px 12px; border:1px solid #e5e7eb; border-radius:8px; font-size:1rem }
+
+        .chamada-list { margin-top:8px }
+        .chamada-item { display:flex; align-items:center; justify-content:space-between; padding:12px; border-radius:8px; border:1px solid #f3f4f6; margin-bottom:8px }
+        .chamada-item .info { display:flex; gap:12px; align-items:center }
+        .nome { font-weight:600 }
+        .email { color:#6b7280; font-size:0.95rem }
+        .presente { color:#16a34a; font-weight:700 }
+        .ausente { color:#9ca3af; font-weight:700 }
+
+        .actions { display:flex; gap:8px }
+
+        @media (max-width:900px) { .container { flex-direction:column } .sidebar { width:100%; flex-direction:row; justify-content:space-between; padding:16px } .main-content { padding:0 12px } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="logo">
+                <img src="img/novamarca_iff_160x185-equal.png" alt="Logo IF">
+                <span>Sistema de Eventos</span>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="index.html"><i class="fa-solid fa-chart-line"></i>Dashboard</a></li>
+                    <li class="active"><a href="eventosADM.html.html">Eventos</a></li>
+                    <li><a href="inscritos.html"><i class="fa-solid fa-users"></i>Inscritos</a></li>
+                    <li class="active"><a href="presenca.html"><i class="fa-solid fa-check"></i>Presença</a></li>
+                    <li><a href="certificado.html" aria-current="page"><i class="fa-solid fa-certificate"></i>&nbsp;Certificados</a></li>
+                    <li><a href="configuracoes.html"><i class="fa-solid fa-gear"></i>Configurações</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-bar">
+                <button class="logout-btn">Logout</button>
+            </header>
+
+            <section>
+                <div class="page-header">
+                    <div>
+                        <h1>Presença</h1>
+                        <p>Selecione um evento para visualizar a lista de chamada e marcar presenças.</p>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="controls">
+                        <select id="eventSelect">
+                            <option value="all">-- Selecionar Evento --</option>
+                        </select>
+                        <input id="searchInput" type="text" placeholder="Buscar por nome ou email...">
+                        <div style="margin-left:auto" class="actions">
+                            <button id="saveBtn" class="btn-save" style="padding:8px 12px;border-radius:8px;border:1px solid #e5e7eb;background:#22c55e;color:#fff;cursor:pointer">Salvar Presenças</button>
+                        </div>
+                    </div>
+
+                    <div id="chamada" class="chamada-list">
+                        <!-- Itens serão renderizados aqui -->
+                    </div>
+
+                    <p id="info" style="color:#6b7280;margin-top:8px">Selecione um evento para iniciar a chamada.</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // Dados locais: inscritos fixos (substituir por API em produção). Eventos carregados via helper
+        const inscritos = [
+            { id: 'u1', nome: 'João Silva', email: 'joao.silva@example.com', evento: 'e1', presente: true },
+            { id: 'u2', nome: 'Maria Santos', email: 'maria.santos@example.com', evento: 'e2', presente: false },
+            { id: 'u3', nome: 'Pedro Costa', email: 'pedro.costa@example.com', evento: 'e1', presente: false },
+            { id: 'u4', nome: 'Ana Oliveira', email: 'ana.oliveira@example.com', evento: 'e3', presente: true },
+            { id: 'u5', nome: 'Carlos Ferreira', email: 'carlos.ferreira@example.com', evento: 'e2', presente: false }
+        ];
+        let eventos = [];
+
+        const eventSelect = document.getElementById('eventSelect');
+        const chamada = document.getElementById('chamada');
+        const info = document.getElementById('info');
+        const searchInput = document.getElementById('searchInput');
+        const saveBtn = document.getElementById('saveBtn');
+
+        // Popular select de eventos (após carregar helper)
+        function populateEvents(){
+            eventSelect.innerHTML = '<option value="all">-- Selecionar Evento --</option>';
+            (eventos||[]).forEach(ev => { const opt = document.createElement('option'); opt.value = ev.id; opt.textContent = ev.nome; eventSelect.appendChild(opt); });
+        }
+
+        function renderLista(eventId, filterText = ''){
+            chamada.innerHTML = '';
+            if(!eventId || eventId === 'all'){
+                info.textContent = 'Selecione um evento para iniciar a chamada.';
+                return;
+            }
+
+            const lista = inscritos.filter(i => i.evento === eventId && (i.nome.toLowerCase().includes(filterText) || i.email.toLowerCase().includes(filterText)));
+            if(lista.length === 0){
+                chamada.innerHTML = '<p style="color:#6b7280">Nenhum inscrito encontrado para este evento.</p>';
+                info.textContent = `Mostrando 0 inscritos para o evento selecionado.`;
+                return;
+            }
+
+            lista.forEach(item => {
+                const el = document.createElement('div'); el.className = 'chamada-item';
+                const left = document.createElement('div'); left.className = 'info';
+                const avatar = document.createElement('div'); avatar.innerHTML = '<i class="fa-solid fa-user" style="color:#22c55e"></i>';
+                const names = document.createElement('div');
+                names.innerHTML = `<div class="nome">${item.nome}</div><div class="email">${item.email}</div>`;
+                left.appendChild(avatar); left.appendChild(names);
+
+                const right = document.createElement('div');
+                right.style.display = 'flex'; right.style.alignItems = 'center'; right.style.gap = '12px';
+
+                const status = document.createElement('div'); status.className = item.presente ? 'presente' : 'ausente';
+                status.innerHTML = item.presente ? '<i class="fa-solid fa-user-check"></i> Presente' : '<i class="fa-solid fa-user-xmark"></i> Ausente';
+
+                const checkbox = document.createElement('input'); checkbox.type = 'checkbox'; checkbox.checked = !!item.presente; checkbox.title = 'Marcar presença';
+                checkbox.addEventListener('change', () => { item.presente = checkbox.checked; status.className = item.presente ? 'presente' : 'ausente'; status.innerHTML = item.presente ? '<i class="fa-solid fa-user-check"></i> Presente' : '<i class="fa-solid fa-user-xmark"></i> Ausente'; });
+
+                right.appendChild(status); right.appendChild(checkbox);
+
+                el.appendChild(left); el.appendChild(right);
+                chamada.appendChild(el);
+            });
+
+            info.textContent = `Mostrando ${lista.length} inscritos (evento selecionado).`;
+        }
+
+        eventSelect.addEventListener('change', ()=>{ renderLista(eventSelect.value, searchInput.value.trim().toLowerCase()) });
+        searchInput.addEventListener('input', ()=>{ renderLista(eventSelect.value, searchInput.value.trim().toLowerCase()) });
+
+        // Carregar helper e popular
+        (function(){
+            const s = document.createElement('script'); s.src = 'js/events.js'; s.onload = ()=>{ eventos = window.PPIEvents.load(); populateEvents(); };
+            document.body.appendChild(s);
+        })();
+
+        saveBtn.addEventListener('click', () => {
+            if(!eventSelect.value || eventSelect.value === 'all') { alert('Selecione um evento primeiro.'); return; }
+            // Simulação de envio para servidor
+            const presentes = inscritos.filter(i => i.evento === eventSelect.value && i.presente);
+            alert(`Presenças salvas (simulação). Presentes: ${presentes.length}`);
+        });
+    </script>
+</body>
+</html>
