@@ -3,96 +3,487 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sistema de Monitoramento de Eventos</title>
+  <title>Home - Sistema de Eventos</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    .home-bg {
-      min-height: 100vh;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f5f5f5;
+    }
+
+    .header {
+      background-color: #fff;
+      padding: 1rem 2rem;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .logo-placeholder {
+      width: 50px;
+      height: 50px;
+      background-color: #f0f0f0;
+      border: 2px dashed #ccc;
+      border-radius: 4px;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: linear-gradient(to bottom, #0c220c 0%, #125c2b 100%);
-      padding: 0 1rem;
-    }
-    .home-card {
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 4px 24px rgba(250, 250, 250, 0.133);
-      max-width: 400px;
-      width: 100%;
-      padding: 2.5rem 2rem 2rem 2rem;
+      font-size: 0.7rem;
+      color: #999;
       text-align: center;
+      padding: 0.25rem;
+    }
+
+    .system-title {
+      font-size: 1rem;
+      color: #333;
+      font-weight: 600;
+    }
+
+    .header-right {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .header-icon {
+      color: #666;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: color 0.3s;
+    }
+
+    .header-icon:hover {
+      color: #28a745;
+    }
+
+    .btn-login {
+      color: #666;
+      text-decoration: none;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: color 0.3s;
+    }
+
+    .btn-login:hover {
+      color: #28a745;
+    }
+
+    .btn-cadastro {
+      background-color: #28a745;
+      color: white;
+      border: none;
+      padding: 0.5rem 1.5rem;
+      border-radius: 4px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+    }
+
+    .btn-cadastro:hover {
+      background-color: #218838;
+    }
+
+    .hero-section {
+      background: linear-gradient(135deg, #28a745 0%, #20873a 100%);
+      color: white;
+      padding: 4rem 2rem;
+      text-align: center;
+    }
+
+    .hero-section h1 {
+      font-size: 2.2rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      line-height: 1.3;
+    }
+
+    .hero-section p {
+      font-size: 1.1rem;
+      margin-bottom: 2rem;
+      opacity: 0.95;
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .hero-buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn-hero {
+      padding: 0.85rem 2rem;
+      border-radius: 4px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1rem;
+      border: 2px solid white;
+    }
+
+    .btn-primary {
+      background-color: white;
+      color: #28a745;
+    }
+
+    .btn-primary:hover {
+      background-color: #f8f9fa;
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+      background-color: transparent;
+      color: white;
+      border: 2px solid white;
+    }
+
+    .btn-secondary:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .events-section {
+      padding: 4rem 2rem;
+      max-width: 1200px;
       margin: 0 auto;
     }
-    .home-title {
-      font-family: 'Segoe UI', Arial, sans-serif;
-      font-size: 2rem;
-      font-weight: bold;
-      margin-bottom: 0.5rem;
-      color: #1e293b;
+
+    .section-header {
+      text-align: center;
+      margin-bottom: 3rem;
     }
-    .home-desc {
-      color: #64748b;
+
+    .section-header h2 {
+      font-size: 2rem;
+      color: #333;
+      margin-bottom: 0.5rem;
+    }
+
+    .section-header p {
+      color: #666;
+      font-size: 1rem;
+    }
+
+    .events-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+      margin-bottom: 3rem;
+    }
+
+    .event-card {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      padding: 1.5rem;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .event-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    }
+
+    .event-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 1rem;
+    }
+
+    .event-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #333;
+      margin-bottom: 0.5rem;
+    }
+
+    .event-badge {
+      background-color: #e8f5e9;
+      color: #28a745;
+      padding: 0.25rem 0.75rem;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .event-description {
+      color: #666;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      margin-bottom: 1.5rem;
+    }
+
+    .event-details {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .event-detail {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #666;
+      font-size: 0.85rem;
+    }
+
+    .event-detail i {
+      color: #28a745;
+      width: 16px;
+    }
+
+    .btn-ver-detalhes {
+      width: 100%;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      padding: 0.75rem;
+      border-radius: 4px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      font-size: 0.95rem;
+      text-decoration: none;
+    }
+
+    .btn-ver-detalhes:hover {
+      background-color: #218838;
+    }
+
+    .cta-section {
+      background-color: #f8f9fa;
+      padding: 3rem 2rem;
+      text-align: center;
+      border-top: 1px solid #e0e0e0;
+    }
+
+    .cta-section h2 {
+      font-size: 1.8rem;
+      color: #333;
+      margin-bottom: 0.75rem;
+    }
+
+    .cta-section p {
+      color: #666;
       font-size: 1rem;
       margin-bottom: 2rem;
     }
-    .home-btns {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-      margin-bottom: 1.5rem;
-    }
-    .home-btn {
-      background: #07360e;
-      color: #fff;
+
+    .btn-cta {
+      background-color: #28a745;
+      color: white;
       border: none;
+      padding: 0.85rem 2.5rem;
       border-radius: 4px;
-      padding: 0.75rem 0;
-      font-size: 1.1rem;
-      font-weight: 500;
+      font-weight: 600;
       cursor: pointer;
-      transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+      transition: all 0.3s;
       text-decoration: none;
-      width: 100%;
-      letter-spacing: 0.5px;
-      box-shadow: 0 2px 8px #0001;
+      display: inline-block;
+      font-size: 1rem;
     }
-    .home-btn.outline {
-      background: #fff;
-      color: #18181b;
-      border: 2px solid #18181b;
+
+    .btn-cta:hover {
+      background-color: #218838;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
     }
-    .home-btn:hover {
-      background: #000;
-      color: #fff;
-      box-shadow: 0 4px 16px #0002;
-      transform: translateY(-2px) scale(1.03);
-    }
-    .home-btn.outline:hover {
-      background: #18181b;
-      color: #fff;
-      box-shadow: 0 4px 16px #0002;
-      transform: translateY(-2px) scale(1.03);
-    }
-    .home-footer {
-      color: #64748b;
-      font-size: 0.95rem;
-      margin-top: 1.5rem;
+
+    @media (max-width: 768px) {
+      .header {
+        padding: 0.75rem 1rem;
+      }
+
+      .system-title {
+        font-size: 0.85rem;
+      }
+
+      .logo-placeholder {
+        width: 40px;
+        height: 40px;
+      }
+
+      .hero-section h1 {
+        font-size: 1.6rem;
+      }
+
+      .hero-section p {
+        font-size: 1rem;
+      }
+
+      .events-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .section-header h2 {
+        font-size: 1.5rem;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="home-bg">
-    <div class="home-card">
-      <div class="home-title">Sistema de Monitoramento de Eventos</div>
-      <div class="home-desc">Gerencie seus eventos e participantes</div>
-      <div class="home-btns">
-        <a href="login.html" class="home-btn"><i class="fa-solid fa-door-open"></i>Entrar</a>
-        <a href="registro.html" class="home-btn outline"><i class="fa-solid fa-cash-register"></i>Registrar</a>
+  <header class="header">
+    <div class="header-left">
+      <div class="logo-placeholder">
+       <img src="https://www.iffarroupilha.edu.br/component/k2/attachments/download/2367/0e66a1e8d61f98d1b8f84efa8700e499" alt="ifflogo" style="height: 80px; width: auto;">
       </div>
-      <div class="home-footer">© 2025 Sistema de Monitoramento de Eventos</div>
+      <span class="system-title">Sistema de Eventos</span>
     </div>
-  </div>
+    <div class="header-right">
+      <a href="login.html" class="btn-login">
+        <i class="fa-solid fa-right-to-bracket"></i>
+        <span>Login</span>
+      </a>
+      <a href="registro.html" class="btn-cadastro">
+        <i class="fa-solid fa-user-plus"></i>
+        <span>Cadastro</span>
+      </a>
+    </div>
+  </header>
+
+  <section class="hero-section">
+    <h1>Sistema Integrado de Gestão de Eventos e Certificação Acadêmica</h1>
+    <p>Participe dos eventos do Instituto Federal Farroupilha e acompanhe sua presença de forma simples e organizada</p>
+    <div class="hero-buttons">
+      <a href="#eventos" class="btn-hero btn-primary">Começar Agora</a>
+      <a href="login.php" class="btn-hero btn-secondary">Já tenho conta</a>
+    </div>
+  </section>
+
+  <section class="events-section" id="eventos">
+    <div class="section-header">
+      <h2>Eventos em Destaque</h2>
+      <p>Confira os principais eventos acadêmicos do IFFar</p>
+    </div>
+
+    <div class="events-grid">
+      <div class="event-card">
+        <div class="event-header">
+          <div>
+            <h3 class="event-title">Semana Acadêmica de Tecnologia</h3>
+          </div>
+          <span class="event-badge">Em breve</span>
+        </div>
+        <p class="event-description">Uma semana dedicada às últimas tendências em tecnologia e inovação</p>
+        <div class="event-details">
+          <div class="event-detail">
+            <i class="fa-solid fa-calendar"></i>
+            <span>15 a 20 de Dezembro, 2025</span>
+          </div>
+          <div class="event-detail">
+            <i class="fa-solid fa-location-dot"></i>
+            <span>Campus Panambi</span>
+          </div>
+          <div class="event-detail">
+            <i class="fa-solid fa-users"></i>
+            <span>50 inscritos</span>
+          </div>
+        </div>
+        <a class="btn-ver-detalhes" href="login.php">Ver Detalhes</a>
+      </div>
+
+      <div class="event-card">
+        <div class="event-header">
+          <div>
+            <h3 class="event-title">Techweek</h3>
+          </div>
+          <span class="event-badge">Inscrições abertas</span>
+        </div>
+        <p class="event-description">Diversos palestrantes da área de tecnologia com temas de inovação e empreendedorismo</p>
+        <div class="event-details">
+          <div class="event-detail">
+            <i class="fa-solid fa-calendar"></i>
+            <span>10 de Janeiro, 2026</span>
+          </div>
+          <div class="event-detail">
+            <i class="fa-solid fa-location-dot"></i>
+            <span>Campus Panambi</span>
+          </div>
+          <div class="event-detail">
+            <i class="fa-solid fa-users"></i>
+            <span>100 inscritos</span>
+          </div>
+        </div>
+        <a class="btn-ver-detalhes" href="login.php">Ver Detalhes</a>
+      </div>
+
+      <div class="event-card">
+        <div class="event-header">
+          <div>
+            <h3 class="event-title">Intensivão de JavaScript</h3>
+          </div>
+          <span class="event-badge">Confirmado</span>
+        </div>
+        <p class="event-description">Discussões sobre práticas aplicadas e conteúdos através de exemplos práticos</p>
+        <div class="event-details">
+          <div class="event-detail">
+            <i class="fa-solid fa-calendar"></i>
+            <span>5 a 7 de Fevereiro, 2026</span>
+          </div>
+          <div class="event-detail">
+            <i class="fa-solid fa-location-dot"></i>
+            <span>Campus Jaguari</span>
+          </div>
+          <div class="event-detail">
+            <i class="fa-solid fa-users"></i>
+            <span>120 inscritos</span>
+          </div>
+        </div>
+        <a class="btn-ver-detalhes" href="login.php">Ver Detalhes</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-section">
+    <h2>Pronto para participar?</h2>
+    <p>Crie sua conta e comece a se inscrever nos eventos do IFFar</p>
+    <a href="registro.html" class="btn-cta">Criar Conta</a>
+  </section>
+
+  <script>
+    // Smooth scroll para a seção de eventos
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
+      });
+    });
+  </script>
 </body>
 </html>

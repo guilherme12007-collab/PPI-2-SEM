@@ -31,7 +31,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             // Limpa os dados temporários da sessão
             unset($_SESSION['temp_cadastro']);
             $_SESSION['success_message'] = "Cadastro realizado com sucesso! Faça login.";
-            header('Location: ../login.html'); // Vai para a tela de login
+            header('Location: ../login.php'); // Vai para a tela de login
             exit();
 
         } catch (\PDOException $e) {
