@@ -107,7 +107,7 @@ function formatPeriodo($inicio, $fim) {
                     <button type="submit" class="novo-evento-btn">Buscar</button>
                 </form>
                 <div style="margin-left:auto;">
-                    <a href="evento_create.php" class="novo-evento-btn">+ Novo Evento</a>
+                    <a href="cadastrar-evento.html" class="novo-evento-btn">+ Novo Evento</a>
                 </div>
             </header>
             <section class="eventos-section">
