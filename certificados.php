@@ -301,6 +301,6 @@ if (isset($_GET['action'])) {
     </div>
   </div>
 
-  <script src="JS/certificados.js"></script>
+  <script src="assets/JS/certificados.js"></script>
 </body>
 </html>
