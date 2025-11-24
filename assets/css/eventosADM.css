@@ -1,17 +1,8 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerenciar Eventos</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-  <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body {
-            background: #f6f6f6;
-            font-family: 'Inter', Arial, sans-serif;
+body {
+    background: #f6f6f6;
+    font-family: 'Inter', Arial, sans-serif;
         }
-        .container {
+.container {
             display: flex;
             min-height: 100vh;
         }
@@ -230,81 +221,3 @@
                 gap: 12px;
             }
         }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <aside class="sidebar">
-            <div class="logo">
-                <img src="img/novamarca_iff_160x185-equal.png" alt="Logo IF">
-                <span>Sistema de Eventos</span>
-            </div>
-            <nav>
-                <ul>
-                    <li><a href="index.html"><i class="fa-solid fa-chart-line"></i>Dashboard</a></li>
-                    <li class="active"><a href="eventosADM.html.html"><i class="fa-solid fa-calendar-days"></i>Eventos</a></li>
-                    <li><a href="inscritos.html"><i class="fa-solid fa-users"></i>Inscritos</a></li>
-                    <li><a href="presenca.html"><i class="fa-solid fa-check"></i>Presença</a></li>
-                    <li><a href="certificado.html" aria-current="page"><i class="fa-solid fa-certificate"></i>&nbsp;Certificados</a></li>
-                    <li><a href="configuracoes.html"><i class="fa-solid fa-gear"></i>Configurações</a></li>
-                </ul>
-            </nav>
-        </aside>
-        <main class="main-content">
-            <header class="top-bar">
-                <div class="settings">
-                    <span class="icon">&#9881;</span>
-                </div>
-                <button class="logout-btn">Logout</button>
-            </header>
-            <section class="eventos-section">
-                <div class="eventos-header">
-                    <h1>Gerenciar Eventos</h1>
-                    <p>Crie, edite e organize seus eventos</p>
-                    <input type="text" class="search-input" placeholder="Buscar eventos...">
-                    <a href="cadastrar-evento.html" class="novo-evento-btn">+ Novo Evento</a>
-                </div>
-                <div class="eventos-list">
-                                <div id="eventosContainer"></div>
-                </div>
-            </section>
-            <script src="js/events.js"></script>
-            <script>
-                // Renderizar eventos dinamicamente a partir do localStorage
-                (function(){
-                    const container = document.getElementById('eventosContainer');
-                    const search = document.querySelector('.search-input');
-
-                    function render(filtered){
-                        container.innerHTML = '';
-                        const list = (filtered || window.PPIEvents.load());
-                        if(!list || list.length === 0){ container.innerHTML = '<p style="color:#6b7280">Nenhum evento encontrado.</p>'; return; }
-                        list.forEach(ev => {
-                            const card = document.createElement('div'); card.className = 'evento-card';
-                            const info = document.createElement('div'); info.className = 'evento-info';
-                            info.innerHTML = `<h2>${ev.nome}</h2><p>${ev.descricao || ''}</p><span>Data: ${ev.data || ''}</span><br><span>Local: ${ev.local || ''}</span>`;
-                            const status = document.createElement('div'); status.className = 'evento-status programado';
-                            status.textContent = ev.data ? 'Programado' : 'Ativo';
-                            const actions = document.createElement('div'); actions.className = 'evento-actions';
-                            const btnEdit = document.createElement('button'); btnEdit.className = 'editar-btn'; btnEdit.textContent = 'Editar'; btnEdit.addEventListener('click', ()=>{ window.location.href = 'configuracoes.html'; localStorage.setItem('ppi_edit_event', ev.id); });
-                            const btnDelete = document.createElement('button'); btnDelete.className = 'excluir-btn'; btnDelete.textContent = 'Excluir'; btnDelete.addEventListener('click', ()=>{ if(confirm('Excluir evento?')){ window.PPIEvents.remove(ev.id); render(); } });
-                            actions.appendChild(btnEdit); actions.appendChild(btnDelete);
-                            card.appendChild(info); card.appendChild(status); card.appendChild(actions);
-                            container.appendChild(card);
-                        });
-                    }
-
-                    search.addEventListener('input', ()=>{
-                        const q = search.value.trim().toLowerCase();
-                        const all = window.PPIEvents.load();
-                        const filtered = all.filter(e => e.nome.toLowerCase().includes(q) || (e.descricao||'').toLowerCase().includes(q));
-                        render(filtered);
-                    });
-
-                    render();
-                })();
-            </script>
-        </main>
-    </div>
-</body>
-</html>
