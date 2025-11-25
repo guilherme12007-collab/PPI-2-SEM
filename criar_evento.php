@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
-require_once 'Database.php';
+session_start();
+require_once __DIR__ . '/../Database.php';
 
 $pdo = getDbConnection();
-session_start(); // necessário para acessar $_SESSION
 
 function respondError(string $msg): void {
     http_response_code(400);
