@@ -93,6 +93,40 @@ if (isset($_GET['action'])) {
         exit;
     }
 
+    // listar certificados emitidos
+    if ($action === 'list_issued') {
+        if (!isOrganizador()) {
+            http_response_code(403);
+            echo json_encode(['error' => 'forbidden']);
+            exit;
+        }
+
+        $id_evento = (int)($_GET['id_evento'] ?? 0);
+
+        try {
+            $sql = "
+                SELECT c.id_certificado, c.nome_participante, c.email_participante,
+                       c.data_emissao, c.codigo_hash, e.titulo AS evento_titulo
+                FROM certificado c
+                JOIN evento e ON c.id_evento = e.id_evento
+            ";
+
+            $params = [];
+            if ($id_evento > 0) {
+                $sql .= " WHERE c.id_evento = :id_evento";
+                $params[':id_evento'] = $id_evento;
+            }
+            $sql .= " ORDER BY c.data_emissao DESC";
+
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute($params);
+            echo json_encode(['data' => $stmt->fetchAll(PDO::FETCH_ASSOC)]);
+        } catch (Exception $e) {
+            http_response_code(500); echo json_encode(['error' => 'query_failed', 'message' => $e->getMessage()]);
+        }
+        exit;
+    }
+
     // emitir lote (validação 70-75% ocorre aqui)
     if ($action === 'emit_lote' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!isOrganizador()) {
@@ -302,6 +336,23 @@ if (isset($_GET['action'])) {
         <p style="color:#6b7280">Selecione um evento para ver os inscritos. A validação 70%–75% será feita somente ao emitir.</p>
       </div>
     </div>
+
+    <!-- Seção de consulta de certificados emitidos -->
+    <div class="panel" style="margin-top: 2rem;">
+      <h2 style="color:#125c2b;font-size:1.5rem;margin-bottom:1rem;font-weight:700">Certificados Emitidos</h2>
+      <div class="controls">
+        <select id="issuedEventSelect" style="padding:8px;border:1px solid #e5e7eb;border-radius:6px">
+          <option value="todos">-- Todos os Eventos --</option>
+        </select>
+      </div>
+
+      <div id="issuedList" style="margin-top: 1rem;">
+        <p style="color:#6b7280">Selecione um evento para filtrar ou veja todos os certificados emitidos.</p>
+      </div>
+      <div id="issuedTotal" style="margin-top: 1rem; color: #666; font-size: 0.9rem;">
+        <!-- Contagem total será inserida aqui -->
+      </div>
+    </div>
   </div>
 
   <!-- Modal de upload do fundo do certificado -->
@@ -333,6 +384,10 @@ document.addEventListener('DOMContentLoaded', function () {
   const confirmEmitBtn = document.getElementById('confirmEmitBtn');
   const cancelUploadBtn = document.getElementById('cancelUploadBtn');
   const output = document.getElementById('output');
+  
+  const issuedEventSelect = document.getElementById('issuedEventSelect');
+  const issuedList = document.getElementById('issuedList');
+  const issuedTotal = document.getElementById('issuedTotal');
 
   function showModal() {
     uploadModal.style.display = 'flex';
@@ -343,7 +398,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   async function fetchEvents(){
     try {
-      const res = await fetch('process/certificados/events.php');
+      const res = await fetch('?action=events');
       const json = await res.json();
       if (json.error) {
         console.error('events error', json);
@@ -352,7 +407,10 @@ document.addEventListener('DOMContentLoaded', function () {
       (json.data||[]).forEach(ev => {
         const o = document.createElement('option');
         o.value = ev.id_evento; o.textContent = (ev.titulo || '') + ' — ' + (ev.data_inicio || '');
+        const o2 = o.cloneNode(true);
+        
         eventSelect.appendChild(o);
+        issuedEventSelect.appendChild(o2);
       });
     } catch (err) {
       console.error('fetchEvents error', err);
@@ -362,7 +420,7 @@ document.addEventListener('DOMContentLoaded', function () {
   async function loadParticipants(id_evento){
     if(!id_evento){ lista.innerHTML = '<p style="color:#6b7280">Selecione um evento para ver os inscritos.</p>'; return; }
     try {
-      const res = await fetch(`process/certificados/participants.php?id_evento=${encodeURIComponent(id_evento)}`);
+      const res = await fetch(`?action=participants&id_evento=${encodeURIComponent(id_evento)}`);
       const json = await res.json();
       if(json.error){ lista.innerHTML = '<p>Erro: '+json.error+'</p>'; return; }
       const rows = json.data || [];
@@ -388,6 +446,44 @@ document.addEventListener('DOMContentLoaded', function () {
     } catch (err) {
       console.error('loadParticipants error', err);
       lista.innerHTML = '<p>Erro ao carregar inscritos.</p>';
+    }
+  }
+
+  async function loadIssuedCertificates(id_evento = 'todos') {
+    const url = id_evento === 'todos' 
+        ? `?action=list_issued` 
+        : `?action=list_issued&id_evento=${encodeURIComponent(id_evento)}`;
+    
+    issuedList.innerHTML = '<p>Carregando certificados...</p>';
+    issuedTotal.textContent = '';
+
+    try {
+        const res = await fetch(url);
+        const json = await res.json();
+        if (json.error) {
+            issuedList.innerHTML = `<p>Erro: ${json.error}</p>`;
+            return;
+        }
+        const rows = json.data || [];
+        if (!rows.length) {
+            issuedList.innerHTML = '<p>Nenhum certificado emitido encontrado para este filtro.</p>';
+            return;
+        }
+        let html = '<table><thead><tr><th>Participante</th><th>Evento</th><th>Data Emissão</th><th>Ações</th></tr></thead><tbody>';
+        rows.forEach(c => {
+            const dataEmissao = new Date(c.data_emissao).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            html += `<tr>
+                <td>${escapeHtml(c.nome_participante)}<br><small class="muted">${escapeHtml(c.email_participante)}</small></td>
+                <td>${escapeHtml(c.evento_titulo)}</td>
+                <td>${dataEmissao}</td>
+                <td><a href="validar_certificado.php?hash=${c.codigo_hash}" target="_blank" class="link">Verificar</a></td>
+            </tr>`;
+        });
+        html += '</tbody></table>';
+        issuedList.innerHTML = html;
+        issuedTotal.textContent = `Total: ${rows.length} certificado(s) emitido(s).`;
+    } catch (err) {
+        issuedList.innerHTML = '<p>Erro ao carregar certificados emitidos.</p>';
     }
   }
 
@@ -440,12 +536,11 @@ document.addEventListener('DOMContentLoaded', function () {
     if(!selected.length){ alert('Selecione ao menos um inscrito.'); return; }
 
     const form = new FormData();
-    form.append('action','emit_lote');
-    selected.forEach(id => form.append('ids[]', id));
-    if(bgFile.files[0]) form.append('background', bgFile.files[0]);
+    const payload = { ids: selected };
 
     output.style.display='block';
     output.textContent = 'Processando...';
+    confirmEmitBtn.disabled = true;
 
     try {
       const res = await fetch('process/certificados/emit_lote.php', { method: 'POST', body: form });
@@ -459,12 +554,17 @@ document.addEventListener('DOMContentLoaded', function () {
     } catch (err) {
       output.textContent = 'Erro de comunicação: ' + (err.message || err);
     } finally {
+      confirmEmitBtn.disabled = false;
       hideModal();
+      // Recarrega a lista de emitidos para refletir as novas emissões
+      loadIssuedCertificates(issuedEventSelect.value);
     }
   });
 
   // inicializa
   fetchEvents();
+  loadIssuedCertificates(); // Carrega todos ao iniciar
+  issuedEventSelect.addEventListener('change', () => loadIssuedCertificates(issuedEventSelect.value));
 });
 </script>
 </body>
