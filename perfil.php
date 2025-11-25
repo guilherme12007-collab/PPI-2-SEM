@@ -125,9 +125,8 @@ $tipo = $user['tipo_perfil'] ?? '';
         <ul class="sidebar-menu">
             <li><a href="index_participante.php"><i class="fa-solid fa-table-cells"></i><span>Mural de Eventos</span></a></li>
             <li><a href="meus_eventos_participante.php"><i class="fa-solid fa-calendar-check"></i><span>Meus Eventos</span></a></li>
-            <li><a href="certificados.html"><i class="fa-solid fa-certificate"></i><span>Meus Certificados</span></a></li>
+            <li><a href="meus_certificados_participante.php"><i class="fa-solid fa-certificate"></i><span>Meus Certificados</span></a></li>
             <li><a href="perfil.php" class="active"><i class="fa-solid fa-user"></i><span>Meu Perfil</span></a></li>
-            <li><a href="configuracoes.html"><i class="fa-solid fa-gear"></i><span>Configurações</span></a></li>
         </ul>
     </aside>
 

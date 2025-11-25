@@ -50,7 +50,7 @@ try {
         </a>
       </li>
       <li>
-        <a href="meus_certificados_participante.html">
+        <a href="meus_certificados_participante.php">
           <i class="fa-solid fa-certificate"></i>
           <span>Meus Certificados</span>
         </a>

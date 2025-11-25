@@ -65,15 +65,18 @@ try {
         exit;
     }
 
-    $today = date('Y-m-d');
-    $start = $evRow['data_inicio'] ? date('Y-m-d', strtotime($evRow['data_inicio'])) : null;
-    $end   = $evRow['data_fim']    ? date('Y-m-d', strtotime($evRow['data_fim']))    : null;
+   $today = date('Y-m-d');
+    
+    // Simplificar a atribuição, assumindo que data_inicio/data_fim já estão em 'YYYY-MM-DD'
+    // Se eles puderem ser NULL ou string vazia, usamos o operador de coalescência nula (PHP 7+) ou o ternário
+    $start = !empty($evRow['data_inicio']) ? date('Y-m-d', strtotime($evRow['data_inicio'])) : null;
+    $end   = !empty($evRow['data_fim']) ? date('Y-m-d', strtotime($evRow['data_fim'])) : null;
 
     // determina se o evento está em andamento hoje
     if ($start && $end) {
         $inProgress = ($today >= $start && $today <= $end);
     } elseif ($start && !$end) {
-        $inProgress = ($today >= $start);
+        $inProgress = ($today === $start); // Permite check-in apenas no dia do evento
     } elseif (!$start && $end) {
         $inProgress = ($today <= $end);
     } else {

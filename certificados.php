@@ -190,7 +190,24 @@ if (isset($_GET['action'])) {
                     ':codigo_hash' => $codigo_hash,
                     ':status_validacao' => 'PENDENTE'
                 ]);
-                $id_cert = (int)$stmt2->fetchColumn();
+
+                // ler o RETURNING de forma robusta
+                $returned = $stmt2->fetch(PDO::FETCH_ASSOC);
+                if ($returned && isset($returned['id_certificado'])) {
+                    $id_cert = (int)$returned['id_certificado'];
+                } else {
+                    // tentar obter lastInsertId (fallback) ou marcar erro
+                    try {
+                        $id_cert = (int)$pdo->lastInsertId('certificado_id_certificado_seq');
+                    } catch (Exception $e2) {
+                        $id_cert = 0;
+                    }
+                }
+
+                if ($id_cert <= 0) {
+                    $results[] = ['id_inscricao' => $id_inscricao, 'error' => 'no_id_returned', 'debug' => $returned ?? null];
+                    continue;
+                }
 
                 $results[] = [
                     'id_inscricao' => $id_inscricao,
@@ -203,7 +220,8 @@ if (isset($_GET['action'])) {
                     'status' => 'saved'
                 ];
             } catch (Exception $ex) {
-                $results[] = ['id_inscricao' => $id_inscricao, 'error' => 'db_error'];
+                // retorne mensagem de erro para debug (remova em produção)
+                $results[] = ['id_inscricao' => $id_inscricao, 'error' => 'db_error', 'message' => $ex->getMessage()];
             }
         }
 
@@ -248,31 +266,15 @@ if (isset($_GET['action'])) {
   <title>Certificados</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
   <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    body { font-family: 'Segoe UI', Arial, sans-serif; background: #f6f7f9; color: #222; margin: 0; }
-    .sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: 220px; background: #fff; border-right: 1px solid #e5e7eb; padding: 2rem 1rem 1rem 1rem; display:flex; flex-direction:column; gap:2rem; min-height:100vh; z-index:10; }
-    .sidebar .logo { width:120px; margin-bottom:2rem; display:block; margin-left:auto; margin-right:auto; }
-    .sidebar nav { display:flex; flex-direction:column; gap:1rem; }
-    .sidebar nav a { color:#222; text-decoration:none; font-weight:600; padding:0.7rem 1rem; border-radius:8px; display:flex; align-items:center; gap:0.7rem; transition:background 0.2s; }
-    .sidebar nav ul li.active a, .sidebar nav ul li a:hover { background:#22c55e22; color:#22c55e; }
-    .main-content { margin-left:240px; padding:2rem; min-height:100vh; }
-    .panel { background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:16px; box-shadow: 0 4px 24px rgba(0,0,0,0.04); max-width:980px; }
-    .controls{display:flex;gap:8px;align-items:center;margin-bottom:12px}
-    .list-item{display:flex;justify-content:space-between;padding:10px;border:1px solid #f3f4f6;margin-bottom:8px;border-radius:6px}
-    .btn{background:#22c55e;color:#fff;padding:8px 12px;border-radius:6px;border:none;cursor:pointer}
-    .btn.out{background:#fff;color:#111;border:1px solid #e5e7eb}
-    @media (max-width:900px){ .main-content{margin-left:0;padding:1rem} .sidebar{position:static;width:100%;flex-direction:row;gap:1rem;padding:1rem} }
-  </style>
+  <link rel="stylesheet" href="./assets/css/certificados_organizador.css">
 </head>
 <body>
   <div class="sidebar">
     <img src="img/logo_iffar-removebg-preview.png" alt="iff" class="logo">
     <nav>
       <ul>
-        <li><a href="index.php"><i class="fa-solid fa-chart-line"></i> Dashboard</a></li>
+        <li><a href="index_organizador.php"><i class="fa-solid fa-chart-line"></i> Dashboard</a></li>
         <li><a href="eventosADM.php"><i class="fa-solid fa-calendar-days"></i> Eventos</a></li>
-        <li><a href="inscritos.html"><i class="fa-solid fa-users"></i> Inscritos</a></li>
-        <li><a href="presenca.html"><i class="fa-solid fa-check"></i> Presença</a></li>
         <li class="active"><a href="certificados.php" aria-current="page"><i class="fa-solid fa-certificate"></i> Certificados</a></li>
         <li><a href="#"><i class="fa-solid fa-gear"></i> Configurações</a></li>
       </ul>
@@ -301,6 +303,168 @@ if (isset($_GET['action'])) {
     </div>
   </div>
 
-  <script src="assets/JS/certificados.js"></script>
+  <!-- Modal de upload do fundo do certificado -->
+  <div id="uploadModal" class="modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); align-items:center; justify-content:center; z-index:50;">
+    <div class="modal-box" style="background:#fff;padding:20px;border-radius:8px;width:90%;max-width:480px;">
+      <h3 style="margin-top:0">Upload do fundo do certificado</h3>
+      <p>Envie a imagem que será usada como plano de fundo (opcional). JPG/PNG, máx 5MB.</p>
+      <input type="file" id="bgFile" accept="image/png, image/jpeg"><br>
+      <img id="bgPreview" class="file-preview" style="display:none; max-width:100%; height:auto; margin-top:8px;" alt="preview">
+      <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn out" type="button" id="cancelUploadBtn">Cancelar</button>
+        <button id="confirmEmitBtn" class="btn" type="button">Emitir e enviar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="output" style="display:none;margin-top:12px;padding:10px;border-radius:6px;background:#fff;max-width:980px;"></div>
+  
+  <!-- no head/footer mantenha HTML existente; apenas substitua o bloco de script por este: -->
+  <script>
+document.addEventListener('DOMContentLoaded', function () {
+  const eventSelect = document.getElementById('eventSelect');
+  const lista = document.getElementById('lista');
+  const emitBtn = document.getElementById('emitBtn');
+  const emitAllBtn = document.getElementById('emitAllBtn');
+  const uploadModal = document.getElementById('uploadModal');
+  const bgFile = document.getElementById('bgFile');
+  const bgPreview = document.getElementById('bgPreview');
+  const confirmEmitBtn = document.getElementById('confirmEmitBtn');
+  const cancelUploadBtn = document.getElementById('cancelUploadBtn');
+  const output = document.getElementById('output');
+
+  function showModal() {
+    uploadModal.style.display = 'flex';
+  }
+  function hideModal() {
+    uploadModal.style.display = 'none';
+  }
+
+  async function fetchEvents(){
+    try {
+      const res = await fetch('process/certificados/events.php');
+      const json = await res.json();
+      if (json.error) {
+        console.error('events error', json);
+        return;
+      }
+      (json.data||[]).forEach(ev => {
+        const o = document.createElement('option');
+        o.value = ev.id_evento; o.textContent = (ev.titulo || '') + ' — ' + (ev.data_inicio || '');
+        eventSelect.appendChild(o);
+      });
+    } catch (err) {
+      console.error('fetchEvents error', err);
+    }
+  }
+
+  async function loadParticipants(id_evento){
+    if(!id_evento){ lista.innerHTML = '<p style="color:#6b7280">Selecione um evento para ver os inscritos.</p>'; return; }
+    try {
+      const res = await fetch(`process/certificados/participants.php?id_evento=${encodeURIComponent(id_evento)}`);
+      const json = await res.json();
+      if(json.error){ lista.innerHTML = '<p>Erro: '+json.error+'</p>'; return; }
+      const rows = json.data || [];
+      if(!rows.length){ lista.innerHTML = '<p>Nenhum inscrito.</p>'; return; }
+      let html = '<table><thead><tr><th><input id="chkAll" type="checkbox"></th><th>Participante</th><th>Email</th><th>Presenças</th><th>%</th></tr></thead><tbody>';
+      rows.forEach(r=>{
+        html += `<tr>
+          <td><input type="checkbox" name="ids[]" value="${r.id_inscricao}"></td>
+          <td>${escapeHtml(r.nome)}</td>
+          <td>${escapeHtml(r.email)}</td>
+          <td>${r.presencas}</td>
+          <td>${r.pct}%</td>
+        </tr>`;
+      });
+      html += '</tbody></table>';
+      lista.innerHTML = html;
+      const chkAll = document.getElementById('chkAll');
+      if (chkAll) {
+        chkAll.addEventListener('change', e=>{
+          document.querySelectorAll('input[name="ids[]"]').forEach(cb => cb.checked = e.target.checked);
+        });
+      }
+    } catch (err) {
+      console.error('loadParticipants error', err);
+      lista.innerHTML = '<p>Erro ao carregar inscritos.</p>';
+    }
+  }
+
+  function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]); }
+
+  eventSelect.addEventListener('change', ()=> loadParticipants(eventSelect.value));
+
+  emitBtn.addEventListener('click', ()=>{
+    const selected = Array.from(document.querySelectorAll('input[name="ids[]"]:checked')).map(i=>i.value);
+    if(!selected.length){ alert('Selecione ao menos um inscrito.'); return; }
+    bgFile.value = '';
+    bgPreview.style.display = 'none';
+    showModal();
+  });
+
+  emitAllBtn.addEventListener('click', async ()=>{
+    const checkboxes = Array.from(document.querySelectorAll('input[name="ids[]"]'));
+    if(!checkboxes.length){ alert('Carregue participantes antes.'); return; }
+    checkboxes.forEach(cb => cb.checked = true);
+    emitBtn.click();
+  });
+
+  bgFile.addEventListener('change', ()=>{
+    const f = bgFile.files[0];
+    if(!f) { bgPreview.style.display='none'; return; }
+    // allow only PNG or JPEG
+    const allowed = ['image/png','image/jpeg'];
+    if (!allowed.includes(f.type)) {
+      alert('Formato inválido — envie apenas PNG ou JPEG.');
+      bgFile.value = '';
+      bgPreview.style.display = 'none';
+      return;
+    }
+    if(f.size > 5*1024*1024){ alert('Máx 5MB'); bgFile.value=''; return; }
+    const reader = new FileReader();
+    reader.onload = e => { bgPreview.src = e.target.result; bgPreview.style.display='block'; };
+    reader.readAsDataURL(f);
+  });
+
+  // fechar modal ao clicar no botão cancelar
+  cancelUploadBtn.addEventListener('click', ()=> hideModal());
+
+  // fechar modal ao clicar fora da caixa
+  uploadModal.addEventListener('click', function(e){
+    if (e.target === uploadModal) hideModal();
+  });
+
+  confirmEmitBtn.addEventListener('click', async ()=>{
+    const selected = Array.from(document.querySelectorAll('input[name="ids[]"]:checked')).map(i=>i.value);
+    if(!selected.length){ alert('Selecione ao menos um inscrito.'); return; }
+
+    const form = new FormData();
+    form.append('action','emit_lote');
+    selected.forEach(id => form.append('ids[]', id));
+    if(bgFile.files[0]) form.append('background', bgFile.files[0]);
+
+    output.style.display='block';
+    output.textContent = 'Processando...';
+
+    try {
+      const res = await fetch('process/certificados/emit_lote.php', { method: 'POST', body: form });
+      const json = await res.json();
+      // não imprimir o JSON cru do banco — mostrar mensagem amigável
+      if (json && json.success) {
+        output.innerHTML = '<div style="color:green">Certificados emitidos com sucesso.</div>';
+      } else {
+        output.innerHTML = '<div style="color:orange">Processamento concluído com avisos. Verifique logs do servidor.</div>';
+      }
+    } catch (err) {
+      output.textContent = 'Erro de comunicação: ' + (err.message || err);
+    } finally {
+      hideModal();
+    }
+  });
+
+  // inicializa
+  fetchEvents();
+});
+</script>
 </body>
 </html>

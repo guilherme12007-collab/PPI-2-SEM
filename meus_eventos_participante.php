@@ -14,7 +14,7 @@ $error = null;
 try {
     $pdo = getDbConnection();
 
-    // filtra eventos já encerrados (não mostrar). eventos sem data_fim ou com data_fim >= hoje aparecem.
+    // buscar todas as inscrições do usuário (a página decide se o evento está em andamento)
     $sql = "
         SELECT
             e.*,
@@ -25,7 +25,6 @@ try {
         JOIN evento e ON e.id_evento = i.id_evento
         JOIN usuario org ON org.id_usuario = e.id_organizador
         WHERE i.id_usuario = :uid
-          AND (e.data_fim IS NULL OR e.data_fim >= CURRENT_DATE)
         ORDER BY e.data_inicio DESC
     ";
     $stmt = $pdo->prepare($sql);
@@ -33,6 +32,25 @@ try {
     $events = $stmt->fetchAll();
 } catch (\PDOException $e) {
     $error = $e->getMessage();
+}
+date_default_timezone_set('America/Sao_Paulo');
+
+// colocar antes de exibir a string "Inscrito em:"
+function formatDbDatetimeLocal($s, $tz='America/Sao_Paulo') {
+  if (empty($s)) return '';
+  $s = trim($s);
+  try {
+    // se o valor contém timezone (Z ou +HH:MM), DateTime tratará corretamente
+    if (preg_match('/Z$|[+\-]\d{2}:\d{2}$/', $s)) {
+      $dt = new DateTimeImmutable($s);
+    } else {
+      // assume UTC quando sem tz (muitos DB usam UTC)
+      $dt = new DateTimeImmutable($s, new DateTimeZone('UTC'));
+    }
+    return $dt->setTimezone(new DateTimeZone($tz))->format('d/m/Y H:i');
+  } catch (Exception $e) {
+    return $s;
+  }
 }
 ?>
 <!DOCTYPE html>
@@ -50,7 +68,7 @@ try {
         <ul class="sidebar-menu">
             <li><a href="index_participante.php"><i class="fa-solid fa-table-cells"></i><span>Mural de Eventos</span></a></li>
             <li><a href="#" class="active"><i class="fa-solid fa-calendar-check"></i><span>Meus Eventos</span></a></li>
-            <li><a href="meus_certificados_participante.html"><i class="fa-solid fa-certificate"></i><span>Meus Certificados</span></a></li>
+            <li><a href="meus_certificados_participante.php"><i class="fa-solid fa-certificate"></i><span>Meus Certificados</span></a></li>
             <li><a href="perfil.php"><i class="fa-solid fa-user"></i><span>Meu Perfil</span></a></li>
         </ul>
     </aside>
@@ -105,28 +123,45 @@ try {
                         $dateEndText = $end ? $end->format('d/m/Y') : '';
                         $dateText = $dateEndText ? "{$dateStartText} a {$dateEndText}" : $dateStartText;
 
-                        // determina estado com base nas datas
-                        $notStarted = $start ? ($today < $start) : false;
+                        // compare using dates only (Y-m-d) to avoid time-of-day issues
+                        $startDate = $start ? new DateTimeImmutable($start->format('Y-m-d')) : null;
+                        $endDate = $end ? new DateTimeImmutable($end->format('Y-m-d')) : null;
+
+                        $notStarted = false;
                         $inProgress = false;
-                        if ($start && $end) {
-                            $inProgress = ($today >= $start && $today <= $end);
-                        } elseif ($start && !$end) {
-                            $inProgress = ($today >= $start);
-                        } elseif (!$start && $end) {
-                            $inProgress = ($today <= $end);
+                        $finished = false;
+
+                        if ($startDate && $endDate) {
+                            if ($today < $startDate) {
+                                $notStarted = true;
+                            } elseif ($today > $endDate) {
+                                $finished = true;
+                            } else {
+                                $inProgress = true;
+                            }
+                        } elseif ($startDate && !$endDate) {
+                            if ($today < $startDate) $notStarted = true;
+                            else $inProgress = true;
+                        } elseif (!$startDate && $endDate) {
+                            if ($today > $endDate) $finished = true;
+                            else $inProgress = true;
                         } else {
-                            $inProgress = true; // sem datas, assume disponível
+                            // no dates → consider available
+                            $inProgress = true;
                         }
 
-                        // mapeia badge/class e label
+                        // decide badge and label
                         if ($notStarted) {
                             $badgeClass = 'badge-breve';
                             $statusLabel = 'Em breve';
                         } elseif ($inProgress) {
                             $badgeClass = 'badge-andamento';
                             $statusLabel = 'Em andamento';
+                        } elseif ($finished) {
+                            $badgeClass = 'badge-finalizado';
+                            $statusLabel = 'Encerrado';
                         } else {
-                            // fallback para status do DB
+                            // fallback to database status
                             if ($statusDb === 'Encerrado') {
                                 $badgeClass = 'badge-finalizado';
                             } elseif ($statusDb === 'Cancelado') {
@@ -149,7 +184,7 @@ try {
                             <div class="info-item"><i class="fa-solid fa-user"></i><span>Organizador: <?php echo $organizador; ?></span></div>
                             <div class="info-item"><i class="fa-solid fa-users"></i><span><?php echo $inscritos; ?> inscritos</span></div>
                             <div class="info-item"><i class="fa-solid fa-clock"></i><span><?php echo $carga; ?> h</span></div>
-                            <div class="info-item"><i class="fa-solid fa-calendar-plus"></i><span>Inscrito em: <?php echo date('d/m/Y H:i', strtotime($ev['data_inscricao'])); ?></span></div>
+                            <div class="info-item"><i class="fa-solid fa-calendar-plus"></i><span>Inscrito em: <?php echo formatDbDatetimeLocal($ev['data_inscricao']); ?></span></div>
                         </div>
                         <div class="event-actions">
                             <?php if ($inProgress): ?>
@@ -163,8 +198,14 @@ try {
                                     <i class="fa-solid fa-arrow-left"></i> Fazer Check-out
                                 </button>
                             <?php else: ?>
-                                <!-- evento ainda não começou: não permite check-in (botões desabilitados/informativos) -->
-                                <button class="btn btn-primary" disabled><i class="fa-solid fa-clock"></i> Check-in disponível em <?php echo $start ? $start->format('d/m/Y') : '—'; ?></button>
+                                <!-- evento não disponível para check-in -->
+                                <?php if ($notStarted): ?>
+                                  <button class="btn btn-primary" disabled><i class="fa-solid fa-clock"></i> Check-in disponível em <?php echo $start ? $start->format('d/m/Y') : '—'; ?></button>
+                                <?php elseif ($finished): ?>
+                                  <button class="btn btn-primary" disabled><i class="fa-solid fa-ban"></i> Evento encerrado</button>
+                                <?php else: ?>
+                                  <button class="btn btn-primary" disabled><i class="fa-solid fa-clock"></i> Check-in indisponível</button>
+                                <?php endif; ?>
                                 <button class="btn btn-secondary" disabled><i class="fa-solid fa-arrow-left"></i> Fazer Check-out</button>
                             <?php endif; ?>
                         </div>
