@@ -145,8 +145,7 @@ function formatPeriodo($inicio, $fim) {
                                 </div>
 
                                 <div class="evento-actions" aria-hidden="true">
-                                    <a href="evento_edit.php?id=<?= (int)$ev['id_evento'] ?>"><button class="editar-btn">Editar</button></a>
-                                    <form method="post" action="evento_delete.php" style="display:inline-block" onsubmit="return confirm('Confirma exclusão deste evento?');">
+                                    <form method="post" action="process/eventos_delete.php" style="display:inline-block" onsubmit="return confirm('Confirma exclusão deste evento?');">
                                         <input type="hidden" name="id" value="<?= (int)$ev['id_evento'] ?>">
                                         <button type="submit" class="excluir-btn">Excluir</button>
                                     </form>
