@@ -1,11 +1,65 @@
+<?php
+require_once 'Database.php';
+
+try {
+    $pdo = getDbConnection();
+
+    // --- Buscar eventos para o filtro ---
+    $stmtEventos = $pdo->query("SELECT id_evento, titulo FROM evento ORDER BY titulo");
+    $eventos = $stmtEventos->fetchAll();
+
+    // --- Construir a consulta para os inscritos ---
+    $sql = "SELECT 
+                u.nome AS participante_nome, 
+                u.email, 
+                e.titulo AS evento_nome, 
+                i.data_inscricao
+            FROM 
+                inscricao i
+            JOIN 
+                usuario u ON i.id_usuario = u.id_usuario
+            JOIN 
+                evento e ON i.id_evento = e.id_evento";
+
+    $params = [];
+    $whereClauses = [];
+
+    // Filtro por evento
+    if (!empty($_GET['evento_id']) && $_GET['evento_id'] !== 'todos') {
+        $whereClauses[] = "e.id_evento = :evento_id";
+        $params[':evento_id'] = $_GET['evento_id'];
+    }
+
+    // Filtro por busca (nome ou email)
+    if (!empty($_GET['search'])) {
+        $whereClauses[] = "(u.nome ILIKE :search OR u.email ILIKE :search)";
+        $params[':search'] = '%' . $_GET['search'] . '%';
+    }
+
+    if (!empty($whereClauses)) {
+        $sql .= " WHERE " . implode(" AND ", $whereClauses);
+    }
+
+    $sql .= " ORDER BY i.data_inscricao DESC";
+
+    $stmtInscritos = $pdo->prepare($sql);
+    $stmtInscritos->execute($params);
+    $inscritos = $stmtInscritos->fetchAll();
+    $totalInscritos = count($inscritos);
+
+} catch (PDOException $e) {
+    // Em um ambiente de produção, você poderia logar o erro e mostrar uma mensagem amigável.
+    die("Erro ao conectar ou consultar o banco de dados: " . $e->getMessage());
+}
+?>
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerenciar Inscritos</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-  <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
             background: #f6f6f6;
@@ -201,17 +255,14 @@
 <body>
     <div class="container">
         <aside class="sidebar">
-            <div class="logo">
-                <img src="img/novamarca_iff_160x185-equal.png" alt="Logo IF">
-                <span>Sistema de Eventos</span>
-            </div>
+            <img src="img/logo_iffar-removebg-preview.png" alt="iff" class="logo">
             <nav>
                 <ul>
-                    <li><a href="index.html"><i class="fa-solid fa-chart-line"></i>Dashboard</a></li>
+                    <li><a href="index_organizador.php"><i class="fa-solid fa-chart-line"></i>Dashboard</a></li>
                     <li><a href="eventosADM.php"><i class="fa-solid fa-calendar-days"></i>Eventos</a></li>
-                    <a href="inscritos.php"><i class="fa-solid fa-users"></i> Inscritos</a>
-                    <li><a href="certificado.html" aria-current="page"><i class="fa-solid fa-certificate"></i>&nbsp;Certificados</a></li>
-                    <li><a href="configuracoes.html"><i class="fa-solid fa-gear"></i>Configurações</a></li>
+                    <li class="active"><a href="inscritos.php"><i class="fa-solid fa-users"></i> Inscritos</a></li>
+                    <li><a href="certificados.php" aria-current="page"><i class="fa-solid fa-certificate"></i>&nbsp;Certificados</a></li>
+                    <li><a href="#"><i class="fa-solid fa-gear"></i>Configurações</a></li>
                 </ul>
             </nav>
         </aside>
@@ -228,12 +279,17 @@
                         <h1>Gerenciar Inscritos</h1>
                         <p>Visualize e gerencie todos os participantes inscritos nos eventos</p>
                     </div>
-                    <input type="text" class="search-input" placeholder="Buscar por nome ou email...">
-                    <select class="filter-select">
-                        <option>Todos os Eventos</option>
-                        <option>Semana Acadêmica de Tecnologia</option>
-                        <option>Workshop de React</option>
-                    </select>
+                    <form method="GET" action="inscritos.php" class="flex items-center">
+                        <input type="text" name="search" class="search-input" placeholder="Buscar por nome ou email..." value="<?= htmlspecialchars($_GET['search'] ?? '') ?>">
+                        <select name="evento_id" class="filter-select" onchange="this.form.submit()">
+                            <option value="todos">Todos os Eventos</option>
+                            <?php foreach ($eventos as $evento): ?>
+                                <option value="<?= $evento['id_evento'] ?>" <?= (($_GET['evento_id'] ?? '') == $evento['id_evento']) ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($evento['titulo']) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </form>
                 </div>
 
                 <div class="inscritos-table">
@@ -249,50 +305,32 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>João Silva</td>
-                                <td>joao.silva@example.com</td>
-                                <td>Semana de Tecnologia 2024</td>
-                                <td>15/03/2024</td>
-                                <td><span class="badge-confirmado">Confirmado</span></td>
-                                <td class="check-presente"><i class="fa-solid fa-user-check"></i> Presente</td>
-                            </tr>
-                            <tr>
-                                <td>Maria Santos</td>
-                                <td>maria.santos@example.com</td>
-                                <td>Workshop de React</td>
-                                <td>18/03/2024</td>
-                                <td><span class="badge-confirmado">Confirmado</span></td>
-                                <td class="check-ausente"><i class="fa-solid fa-user-xmark"></i> Ausente</td>
-                            </tr>
-                            <tr>
-                                <td>Pedro Costa</td>
-                                <td>pedro.costa@example.com</td>
-                                <td>Semana de Tecnologia 2024</td>
-                                <td>20/03/2024</td>
-                                <td><span class="badge-pendente">Pendente</span></td>
-                                <td class="check-ausente"><i class="fa-solid fa-user-xmark"></i> Ausente</td>
-                            </tr>
-                            <tr>
-                                <td>Ana Oliveira</td>
-                                <td>ana.oliveira@example.com</td>
-                                <td>Palestra sobre IA</td>
-                                <td>22/03/2024</td>
-                                <td><span class="badge-confirmado">Confirmado</span></td>
-                                <td class="check-presente"><i class="fa-solid fa-user-check"></i> Presente</td>
-                            </tr>
-                            <tr>
-                                <td>Carlos Ferreira</td>
-                                <td>carlos.ferreira@example.com</td>
-                                <td>Workshop de React</td>
-                                <td>25/03/2024</td>
-                                <td><span class="badge-confirmado">Confirmado</span></td>
-                                <td class="check-ausente"><i class="fa-solid fa-user-xmark"></i> Ausente</td>
-                            </tr>
+                            <?php if (empty($inscritos)): ?>
+                                <tr>
+                                    <td colspan="6" class="text-center py-10 text-gray-500">Nenhum inscrito encontrado.</td>
+                                </tr>
+                            <?php else: ?>
+                                <?php foreach ($inscritos as $inscrito): ?>
+                                <tr>
+                                    <td><?= htmlspecialchars($inscrito['participante_nome']) ?></td>
+                                    <td><?= htmlspecialchars($inscrito['email']) ?></td>
+                                    <td><?= htmlspecialchars($inscrito['evento_nome']) ?></td>
+                                    <td><?= (new DateTime($inscrito['data_inscricao']))->format('d/m/Y') ?></td>
+                                    <td>
+                                        <span class="badge-confirmado">Confirmado</span>
+                                    </td>
+                                    <td>
+                                        <span class="check-ausente">
+                                            <i class="fa-solid fa-user-xmark"></i> Ausente
+                                        </span>
+                                    </td>
+                                </tr>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
                         </tbody>
                     </table>
                 </div>
-                <p style="margin-top:12px;color:#6b7280">Mostrando 5 de 5 inscritos</p>
+                <p style="margin-top:12px;color:#6b7200">Mostrando <?= $totalInscritos ?> de <?= $totalInscritos ?> inscritos</p>
             </section>
         </main>
     </div>
