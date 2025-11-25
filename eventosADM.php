@@ -91,7 +91,7 @@ function formatPeriodo($inicio, $fim) {
             <img src="img/logo_iffar-removebg-preview.png" alt="iff" class="logo">
             <nav>
                 <ul>
-                    <li><a href="index_professor.php"><i class="fa-solid fa-chart-line"></i>Dashboard</a></li>
+                    <li><a href="index_organizador.php"><i class="fa-solid fa-chart-line"></i>Dashboard</a></li>
                     <li class="active"><a href="eventosADM.php"><i class="fa-solid fa-calendar-days"></i>Eventos</a></li>
                     <li><a href="inscritos.php"><i class="fa-solid fa-users"></i>Inscritos</a></li>
                     <li><a href="presenca.php"><i class="fa-solid fa-check"></i>Presença</a></li>
@@ -148,7 +148,7 @@ function formatPeriodo($inicio, $fim) {
 
                                 <div class="evento-actions" aria-hidden="true">
                                     <a href="evento_edit.php?id=<?= (int)$ev['id_evento'] ?>"><button class="editar-btn">Editar</button></a>
-                                    <form method="post" action="evento_delete.php" style="display:inline-block" onsubmit="return confirm('Confirma exclusão deste evento?');">
+                                    <form method="post" action="process/eventos_delete.php" style="display:inline-block" onsubmit="return confirm('Confirma exclusão deste evento?');">
                                         <input type="hidden" name="id" value="<?= (int)$ev['id_evento'] ?>">
                                         <button type="submit" class="excluir-btn">Excluir</button>
                                     </form>

@@ -269,7 +269,7 @@ if (isset($_GET['action'])) {
     <img src="img/logo_iffar-removebg-preview.png" alt="iff" class="logo">
     <nav>
       <ul>
-        <li><a href="index.php"><i class="fa-solid fa-chart-line"></i> Dashboard</a></li>
+        <li><a href="index_organizador.php"><i class="fa-solid fa-chart-line"></i> Dashboard</a></li>
         <li><a href="eventosADM.php"><i class="fa-solid fa-calendar-days"></i> Eventos</a></li>
         <li><a href="inscritos.html"><i class="fa-solid fa-users"></i> Inscritos</a></li>
         <li><a href="presenca.html"><i class="fa-solid fa-check"></i> Presença</a></li>
