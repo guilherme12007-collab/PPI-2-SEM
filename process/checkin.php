@@ -1,5 +1,8 @@
 <?php
 session_start();
+// Define o fuso horário para o de São Paulo para garantir que as horas sejam registradas corretamente.
+date_default_timezone_set('America/Sao_Paulo');
+
 header('Content-Type: application/json; charset=utf-8');
 
 ob_start();
