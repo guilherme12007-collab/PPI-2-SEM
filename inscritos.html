@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciar Inscritos</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: #f6f6f6;
+            font-family: 'Inter', Arial, sans-serif;
+        }
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+        .sidebar {
+            width: 220px;
+            background: #fff;
+            border-right: 1px solid #e5e7eb;
+            padding: 32px 0 0 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .logo {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+        .logo img {
+            width: 120px;
+            margin-bottom: 8px;
+        }
+        .logo span {
+            font-weight: 600;
+            font-size: 15px;
+        }
+        .sidebar nav ul {
+            list-style: none;
+            padding: 0;
+            width: 100%;
+        }
+        .sidebar nav ul li {
+            margin-bottom: 8px;
+        }
+        .sidebar nav ul li a {
+            display: flex;
+            align-items: center;
+            padding: 10px 24px;
+            color: #333;
+            text-decoration: none;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+        .sidebar nav ul li.active a,
+        .sidebar nav ul li a:hover {
+            background: #22c55e22;
+            color: #22c55e;
+        }
+        .sidebar nav a.active, .sidebar nav a:hover { background:#22c55e22; color:#22c55e }
+        .main-content {
+            flex: 1;
+            padding: 0 40px;
+        }
+        .top-bar {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            padding: 24px 0 0 0;
+            gap: 16px;
+        }
+        .settings .icon {
+            font-size: 20px;
+            color: #6b7280;
+            margin-right: 8px;
+        }
+        .logout-btn {
+            background: #22c55e;
+            color: #fff;
+            border: none;
+            padding: 8px 24px;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .logout-btn:hover {
+            background: #16a34a;
+        }
+        .eventos-section {
+            margin-top: 24px;
+        }
+        .eventos-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            gap: 12px;
+        }
+        .eventos-header h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .eventos-header p {
+            color: #6b7280;
+            font-size: 0.95rem;
+            margin-bottom: 0;
+        }
+        .search-input {
+            flex: 1;
+            max-width: 420px;
+            padding: 10px 16px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            margin-left: 0;
+            margin-right: 8px;
+            background: #fff;
+            font-size: 1rem;
+        }
+        .filter-select {
+            padding: 10px 14px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            background: #fff;
+            font-size: 1rem;
+        }
+        .inscritos-table {
+            width: 100%;
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            overflow: auto;
+        }
+        .inscritos-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .inscritos-table thead th {
+            text-align: left;
+            padding: 12px 16px;
+            color: #6b7280;
+            font-weight: 600;
+            font-size: 0.95rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .inscritos-table tbody td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #f3f4f6;
+            color: #374151;
+            vertical-align: middle;
+        }
+        .inscritos-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+        .badge-confirmado {
+            background: #22c55e;
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        .badge-pendente {
+            background: #f3f4f6;
+            color: #374151;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        .check-presente { color: #16a34a; font-weight:600 }
+        .check-ausente { color: #9ca3af; font-weight:600 }
+
+        @media (max-width: 900px) {
+            .container {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                flex-direction: row;
+                justify-content: space-between;
+                padding: 16px;
+            }
+            .main-content {
+                padding: 0 12px;
+            }
+            .eventos-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="logo">
+                <img src="img/novamarca_iff_160x185-equal.png" alt="Logo IF">
+                <span>Sistema de Eventos</span>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="index.html"><i class="fa-solid fa-chart-line"></i>Dashboard</a></li>
+                    <li><a href="eventosADM.php"><i class="fa-solid fa-calendar-days"></i>Eventos</a></li>
+                    <li><a href="certificado.html" aria-current="page"><i class="fa-solid fa-certificate"></i>&nbsp;Certificados</a></li>
+                    <li><a href="configuracoes.html"><i class="fa-solid fa-gear"></i>Configurações</a></li>
+                </ul>
+            </nav>
+        </aside>
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="settings">
+                    <span class="icon">&#9881;</span>
+                </div>
+                <a href="login.php" class="logout-btn"><i class="fa-solid fa-sign-out-alt"></i> Sair</a>
+            </header>
+            <section class="eventos-section">
+                <div class="eventos-header">
+                    <div>
+                        <h1>Gerenciar Inscritos</h1>
+                        <p>Visualize e gerencie todos os participantes inscritos nos eventos</p>
+                    </div>
+                    <input type="text" class="search-input" placeholder="Buscar por nome ou email...">
+                    <select class="filter-select">
+                        <option>Todos os Eventos</option>
+                        <option>Semana Acadêmica de Tecnologia</option>
+                        <option>Workshop de React</option>
+                    </select>
+                </div>
+
+                <div class="inscritos-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>Email</th>
+                                <th>Evento</th>
+                                <th>Data de Inscrição</th>
+                                <th>Status</th>
+                                <th>Check-in</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>João Silva</td>
+                                <td>joao.silva@example.com</td>
+                                <td>Semana de Tecnologia 2024</td>
+                                <td>15/03/2024</td>
+                                <td><span class="badge-confirmado">Confirmado</span></td>
+                                <td class="check-presente"><i class="fa-solid fa-user-check"></i> Presente</td>
+                            </tr>
+                            <tr>
+                                <td>Maria Santos</td>
+                                <td>maria.santos@example.com</td>
+                                <td>Workshop de React</td>
+                                <td>18/03/2024</td>
+                                <td><span class="badge-confirmado">Confirmado</span></td>
+                                <td class="check-ausente"><i class="fa-solid fa-user-xmark"></i> Ausente</td>
+                            </tr>
+                            <tr>
+                                <td>Pedro Costa</td>
+                                <td>pedro.costa@example.com</td>
+                                <td>Semana de Tecnologia 2024</td>
+                                <td>20/03/2024</td>
+                                <td><span class="badge-pendente">Pendente</span></td>
+                                <td class="check-ausente"><i class="fa-solid fa-user-xmark"></i> Ausente</td>
+                            </tr>
+                            <tr>
+                                <td>Ana Oliveira</td>
+                                <td>ana.oliveira@example.com</td>
+                                <td>Palestra sobre IA</td>
+                                <td>22/03/2024</td>
+                                <td><span class="badge-confirmado">Confirmado</span></td>
+                                <td class="check-presente"><i class="fa-solid fa-user-check"></i> Presente</td>
+                            </tr>
+                            <tr>
+                                <td>Carlos Ferreira</td>
+                                <td>carlos.ferreira@example.com</td>
+                                <td>Workshop de React</td>
+                                <td>25/03/2024</td>
+                                <td><span class="badge-confirmado">Confirmado</span></td>
+                                <td class="check-ausente"><i class="fa-solid fa-user-xmark"></i> Ausente</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p style="margin-top:12px;color:#6b7280">Mostrando 5 de 5 inscritos</p>
+            </section>
+        </main>
+    </div>
+</body>
+</html>
