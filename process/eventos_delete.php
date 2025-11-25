@@ -48,9 +48,13 @@ try {
         exit;
     }
 
-    // Executa a exclusão
-    $delete = $pdo->prepare("DELETE FROM evento WHERE id_evento = :id");
-    $delete->execute([':id' => $eventoId]);
+    // Exclui primeiro os inscritos do evento
+    $deleteInscritos = $pdo->prepare("DELETE FROM inscricao WHERE id_evento = :id");
+    $deleteInscritos->execute([':id' => $eventoId]);
+
+    // Depois exclui o evento
+    $deleteEvento = $pdo->prepare("DELETE FROM evento WHERE id_evento = :id");
+    $deleteEvento->execute([':id' => $eventoId]);
 
     // Redireciona após exclusão
     header('Location: ../eventosADM.php?deleted=1');
