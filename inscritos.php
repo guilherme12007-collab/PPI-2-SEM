@@ -61,54 +61,48 @@ try {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body {
-            background: #f6f6f6;
-            font-family: 'Inter', Arial, sans-serif;
-        }
-        .container {
-            display: flex;
-            min-height: 100vh;
-        }
-        .sidebar {
-            width: 220px;
-            background: #fff;
-            border-right: 1px solid #e5e7eb;
-            padding: 32px 0 0 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .logo {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-bottom: 32px;
-        }
-        .logo img {
-            width: 120px;
-            margin-bottom: 8px;
-        }
-        .logo span {
-            font-weight: 600;
-            font-size: 15px;
-        }
-        .sidebar nav ul {
-            list-style: none;
-            padding: 0;
-            width: 100%;
-        }
-        .sidebar nav ul li {
-            margin-bottom: 8px;
-        }
-        .sidebar nav ul li a {
-            display: flex;
-            align-items: center;
-            padding: 10px 24px;
-            color: #333;
-            text-decoration: none;
-            border-radius: 6px;
-            transition: background 0.2s;
-        }
+               body { font-family: 'Segoe UI', Arial, sans-serif;
+       background: #f6f7f9; 
+       color: #222; 
+       margin: 0; }
+
+    .sidebar { 
+      position: fixed; 
+      left: 0; 
+      top: 0; 
+      bottom: 0; 
+      width: 220px; 
+      background: #fff; 
+      border-right: 1px solid #e5e7eb; 
+      padding: 2rem 1rem 1rem 1rem; 
+      display: flex; 
+      flex-direction: column; 
+      gap: 2rem; 
+      min-height: 100vh; z-index: 10; }
+
+    .sidebar .logo { 
+      width: 120px; 
+      margin-bottom: 2rem; 
+      display: block; 
+      margin-left: auto; 
+      margin-right: auto; }
+
+    .sidebar nav { 
+      display: flex; 
+      flex-direction: column; 
+      gap: 1rem; }
+
+    .sidebar nav a { 
+      color: #222; 
+      text-decoration: none; 
+      font-weight: 600; 
+      padding: 0.7rem 1rem; 
+      border-radius: 8px; 
+      display: flex; 
+      align-items: center;
+      gap: 0.7rem; 
+      transition: background 0.2s; }
+
         .sidebar nav ul li.active a,
         .sidebar nav ul li a:hover {
             background: #22c55e22;
@@ -119,6 +113,10 @@ try {
             flex: 1;
             padding: 0 40px;
         }
+
+    .main-content { margin-left: 240px; 
+      padding: 2rem; 
+      min-height: 100vh; }
         .top-bar {
             display: flex;
             justify-content: flex-end;
@@ -255,7 +253,11 @@ try {
 <body>
     <div class="container">
         <aside class="sidebar">
-            <img src="img/logo_iffar-removebg-preview.png" alt="iff" class="logo">
+            <img src="img/logo_iffar-removebg-preview.png" alt="iff" id="logo" class="logo" style=" max-width: 120px;
+  margin-bottom: 2rem;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;">
             <nav>
                 <ul>
                     <li><a href="index_organizador.php"><i class="fa-solid fa-chart-line"></i>Dashboard</a></li>

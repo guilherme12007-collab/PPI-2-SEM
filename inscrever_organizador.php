@@ -35,46 +35,63 @@ try {
   <link rel="stylesheet" href="assets/css/index_participante.css">
   <!-- Estilos específicos para a página do organizador -->
   <style>
-    body {
-        background-color: #f8f9fa;
-    }
-    .sidebar {
-        width: 250px;
-        background: #fff;
-        padding: 20px;
-        height: 100vh;
-        position: fixed;
-        border-right: 1px solid #e5e7eb;
-    }
-    .sidebar .logo {
-        margin-bottom: 30px;
-        text-align: center;
-    }
-    .sidebar nav ul {
-        list-style: none;
-        padding: 0;
-    }
-    .sidebar nav ul li a {
-        display: flex;
-        align-items: center;
-        padding: 12px 15px;
-        color: #333;
-        text-decoration: none;
-        border-radius: 8px;
-        margin-bottom: 5px;
-        transition: background 0.2s, color 0.2s;
-    }
-    .sidebar nav ul li a:hover, .sidebar nav ul li.active a {
-        background: #e0f2fe;
-        color: #0c4a6e;
-    }
-    .sidebar nav ul li a i {
-        margin-right: 10px;
-    }
-    .main-content {
-        margin-left: 250px;
-        padding: 20px;
-    }
+        body { font-family: 'Segoe UI', Arial, sans-serif;
+       background: #f6f7f9; 
+       color: #222; 
+       margin: 0; }
+
+    .sidebar { 
+      position: fixed; 
+      left: 0; 
+      top: 0; 
+      bottom: 0; 
+      width: 220px; 
+      background: #fff; 
+      border-right: 1px solid #e5e7eb; 
+      padding: 2rem 1rem 1rem 1rem; 
+      display: flex; 
+      flex-direction: column; 
+      gap: 2rem; 
+      min-height: 100vh; z-index: 10; }
+
+    .sidebar .logo { 
+      width: 120px; 
+      margin-bottom: 2rem; 
+      display: block; 
+      margin-left: auto; 
+      margin-right: auto; }
+
+    .sidebar nav { 
+      display: flex; 
+      flex-direction: column; 
+      gap: 1rem; }
+
+    .sidebar nav a { 
+      color: #222; 
+      text-decoration: none; 
+      font-weight: 600; 
+      padding: 0.7rem 1rem; 
+      border-radius: 8px; 
+      display: flex; 
+      align-items: center;
+      gap: 0.7rem; 
+      transition: background 0.2s; }
+
+        .sidebar nav ul li.active a,
+        .sidebar nav ul li a:hover {
+            background: #22c55e22;
+            color: #22c55e;
+        }
+        .sidebar nav a.active, .sidebar nav a:hover { background:#22c55e22; color:#22c55e }
+        .main-content {
+            flex: 1;
+            padding: 0 40px;
+        }
+
+    .main-content { margin-left: 240px; 
+      padding: 2rem; 
+      min-height: 100vh; }
+
   </style>
 </head>
 <body>
@@ -84,11 +101,11 @@ try {
       <ul>
         <li><a href="index_organizador.php"><i class="fa-solid fa-chart-line"></i>Dashboard</a></li>
         <li><a href="eventosADM.php"><i class="fa-solid fa-calendar-days"></i>Eventos</a></li>
-        <li><a href="inscritos.php"><i class="fa-solid fa-users"></i> Inscritos</a></li>
-        <li><a href="certificados.php"><i class="fa-solid fa-certificate"></i>&nbsp;Certificados</a></li>
+        <a href="inscritos.php"><i class="fa-solid fa-users"></i> Inscritos</a>
+        <li><a href="certificados.php" aria-current="page"><i class="fa-solid fa-certificate"></i>&nbsp;Certificados</a></li>
         <li class="active"><a href="inscrever_organizador.php"><i class="fa-solid fa-pen-to-square"></i>Inscrever-se</a></li>
-      </ul>
-    </nav>
+        </ul>
+      </nav>
   </div>
 
   <div class="main-content">

@@ -109,7 +109,11 @@ function formatPeriodo($inicio, $fim) {
 <body>
     <div class="container">
         <aside class="sidebar">
-            <img src="img/logo_iffar-removebg-preview.png" alt="iff" class="logo" />
+            <img src="img/logo_iffar-removebg-preview.png" alt="iff" id="logo" class="logo" style=" max-width: 120px;
+  margin-bottom: 2rem;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;">
             <nav>
                 <ul>
                     <li><a href="index_organizador.php"><i class="fa-solid fa-chart-line"></i>Dashboard</a></li>
