@@ -98,7 +98,7 @@ function e($v){ return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
     <ul class="sidebar-menu">
       <li><a href="index_participante.php"><i class="fa-solid fa-table-cells"></i><span>Mural de Eventos</span></a></li>
       <li><a href="meus_eventos_participante.php"><i class="fa-solid fa-calendar-check"></i><span>Meus Eventos</span></a></li>
-      <li><a href="meu_certificados_participante.php" class="active"><i class="fa-solid fa-certificate"></i><span>Emitir Certificados</span></a></li>
+      <li><a href="meus_certificados_participante.php" class="active"><i class="fa-solid fa-certificate"></i><span>Emitir Certificados</span></a></li>
       <li><a href="perfil.php"><i class="fa-solid fa-user"></i><span>Meu Perfil</span></a></li>
     </ul>
   </aside>
@@ -113,7 +113,7 @@ function e($v){ return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
         </div>
       </div>
       <div>
-        <a href="process/logout.php" class="btn btn-ghost" style="text-decoration:none;color:#111"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+        <a href="login.php" class="btn btn-ghost" style="text-decoration:none;color:#111"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
       </div>
     </header>
 
@@ -136,6 +136,7 @@ function e($v){ return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
           <?php foreach ($rows as $r):
             $pct = (float)($r['pct'] ?? 0.0);
             $eligible = $pct >= $threshold;
+            $id_certificado = $r['id_certificado'] ?? null;
             $status = $r['status_validacao'] ?? null;
             $hasFile = !empty($r['caminho_arquivo']);
             $start = $r['data_inicio'] ? date('d/m/Y', strtotime($r['data_inicio'])) : '';
@@ -150,35 +151,29 @@ function e($v){ return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
 
               <div style="margin-top:12px;display:flex;gap:8px;align-items:center;justify-content:space-between">
                 <div>
-                  <?php if ($hasFile): 
-                    $path = '/' . trim('PPI/' . $r['caminho_arquivo'], '/');
-                  ?>
-                    <span class="badge badge-available">Disponível</span>
+                  <?php if ($id_certificado && $status === 'VALIDADO'): ?>
+                      <span class="badge badge-available">Disponível</span>
+                  <?php elseif ($id_certificado && $status === 'PENDENTE'): ?>
+                      <span class="badge badge-pending">Pendente de Emissão</span>
                   <?php elseif ($eligible): ?>
-                    <span class="badge badge-eligible">Elegível</span>
-                  <?php elseif ($status === 'PENDENTE'): ?>
-                    <span class="badge badge-pending">Pendente</span>
+                      <span class="badge badge-eligible">Elegível</span>
                   <?php else: ?>
-                    <span class="badge badge-unavailable">Não elegível</span>
+                      <span class="badge badge-unavailable">Não elegível</span>
                   <?php endif; ?>
                 </div>
 
+ 
                 <div style="display:flex;gap:8px;align-items:center">
-                  <?php if ($hasFile): ?>
-                    <?php if (($r['status_validacao'] ?? '') !== 'VALIDADO'): ?>
-                      <!-- mesmo botão: abre visualização e dispara validação -->
-                      <button class="btn btn-primary" onclick="viewAndValidate('<?php echo e($r['codigo_hash'] ?? ''); ?>', this)">Visualizar / Validar</button>
-                    <?php else: ?>
-                      <!-- já validado: apenas visualizar + indicação -->
+                  <?php if ($id_certificado && $status === 'VALIDADO'): ?>
                       <button class="btn" onclick="openCertificateView('<?php echo e($r['codigo_hash'] ?? ''); ?>')">Visualizar</button>
                       <button class="btn btn-ghost" disabled>Validado</button>
-                    <?php endif; ?>
+                  <?php elseif ($id_certificado && $status === 'PENDENTE'): ?>
+                      <button class="btn btn-primary" onclick="viewAndValidate('<?php echo e($r['codigo_hash'] ?? ''); ?>', this)">Emitir e Validar</button>
                   <?php elseif ($eligible): ?>
-                    <button class="btn btn-primary" onclick="requestIssue(<?php echo (int)$r['id_inscricao']; ?>, this)">Solicitar Emissão</button>
-                    <?php if (!empty($status)): ?><div class="small" style="margin-left:8px">Status: <?php echo e($status); ?></div><?php endif; ?>
+                      <button class="btn btn-primary" onclick="requestIssue(<?php echo (int)$r['id_inscricao']; ?>, this)">Solicitar Emissão</button>
                   <?php else: ?>
-                    <button class="btn btn-ghost" disabled>Não elegível</button>
-                    <div class="small" style="margin-left:8px">Requer <?php echo e($threshold); ?>% de presença</div>
+                      <button class="btn btn-ghost" disabled>Não elegível</button>
+                      <div class="small" style="margin-left:8px">Requer <?php echo e($threshold); ?>% de presença</div>
                   <?php endif; ?>
                 </div>
               </div>
@@ -218,13 +213,17 @@ function verificar(hash) {
 
 function openCertificateView(hash) {
   if (!hash) { alert('Código de validação não disponível.'); return; }
-  window.open('process/certificados/render_pdf.php?hash=' + encodeURIComponent(hash), '_blank');
+  window.open('certificado_view.php?hash=' + encodeURIComponent(hash), '_blank');
 }
 
+/**
+ * Abre a visualização do certificado (que força a geração do PDF se não existir)
+ * e, em paralelo, envia uma requisição para marcar o certificado como 'VALIDADO' no banco.
+ */
 async function viewAndValidate(hash, btn) {
   if (!hash) { alert('Hash inválido'); return; }
   // abre visualização em nova aba
-  window.open('process/certificados/render_pdf.php?hash=' + encodeURIComponent(hash), '_blank');
+  window.open('certificado_view.php?hash=' + encodeURIComponent(hash), '_blank');
 
   // dispara validação (sem confirmação extra) e atualiza UI
   btn.disabled = true;
@@ -261,11 +260,13 @@ async function viewAndValidate(hash, btn) {
     } else {
       btn.disabled = false;
       btn.textContent = originalText || 'Visualizar / Validar';
+      btn.textContent = originalText || 'Emitir e Validar';
       alert('Erro: ' + (json && json.message ? json.message : 'Falha ao validar'));
     }
   } catch (err) {
     btn.disabled = false;
     btn.textContent = originalText || 'Visualizar / Validar';
+    btn.textContent = originalText || 'Emitir e Validar';
     alert('Erro de comunicação: ' + (err.message || err));
   }
 }

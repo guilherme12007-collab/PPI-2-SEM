@@ -28,63 +28,71 @@ try {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mural de Eventos</title>
+  <title>Inscrever-se em Eventos</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Usando o CSS do index_participante para a grade de eventos -->
   <link rel="stylesheet" href="assets/css/index_participante.css">
+  <!-- Estilos específicos para a página do organizador -->
+  <style>
+    body {
+        background-color: #f8f9fa;
+    }
+    .sidebar {
+        width: 250px;
+        background: #fff;
+        padding: 20px;
+        height: 100vh;
+        position: fixed;
+        border-right: 1px solid #e5e7eb;
+    }
+    .sidebar .logo {
+        margin-bottom: 30px;
+        text-align: center;
+    }
+    .sidebar nav ul {
+        list-style: none;
+        padding: 0;
+    }
+    .sidebar nav ul li a {
+        display: flex;
+        align-items: center;
+        padding: 12px 15px;
+        color: #333;
+        text-decoration: none;
+        border-radius: 8px;
+        margin-bottom: 5px;
+        transition: background 0.2s, color 0.2s;
+    }
+    .sidebar nav ul li a:hover, .sidebar nav ul li.active a {
+        background: #e0f2fe;
+        color: #0c4a6e;
+    }
+    .sidebar nav ul li a i {
+        margin-right: 10px;
+    }
+    .main-content {
+        margin-left: 250px;
+        padding: 20px;
+    }
+  </style>
 </head>
 <body>
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-      <h2>Menu</h2>
-    </div>
-    <ul class="sidebar-menu">
-      <li>
-        <a href="#" class="active">
-          <i class="fa-solid fa-table-cells"></i>
-          <span>Mural de Eventos</span>
-        </a>
-      </li>
-      <li>
-        <a href="meus_eventos_participante.php">
-          <i class="fa-solid fa-calendar-check"></i>
-          <span>Meus Eventos</span>
-        </a>
-      </li>
-      <li>
-        <a href="meus_certificados_participante.php">
-          <i class="fa-solid fa-certificate"></i>
-          <span>Meus Certificados</span>
-        </a>
-      </li>
-      <li>
-        <a href="perfil.php">
-          <i class="fa-solid fa-user"></i>
-          <span>Meu Perfil</span>
-        </a>
-      </li>
-    </ul>
-  </aside>
+  <div class="sidebar">
+    <img src="img/logo_iffar-removebg-preview.png" alt="iff" class="logo">
+    <nav>
+      <ul>
+        <li><a href="index_organizador.php"><i class="fa-solid fa-chart-line"></i>Dashboard</a></li>
+        <li><a href="eventosADM.php"><i class="fa-solid fa-calendar-days"></i>Eventos</a></li>
+        <li><a href="inscritos.php"><i class="fa-solid fa-users"></i> Inscritos</a></li>
+        <li><a href="certificados.php"><i class="fa-solid fa-certificate"></i>&nbsp;Certificados</a></li>
+        <li class="active"><a href="inscrever_organizador.php"><i class="fa-solid fa-pen-to-square"></i>Inscrever-se</a></li>
+      </ul>
+    </nav>
+  </div>
 
-  <div class="main-wrapper">
-    <header class="header">
-      <div class="header-left">
-        <button class="mobile-menu-btn" onclick="toggleSidebar()">
-          <i class="fa-solid fa-bars"></i>
-        </button>
-        <div class="logo-placeholder">
-          <img src="https://www.iffarroupilha.edu.br/component/k2/attachments/download/2367/0e66a1e8d61f98d1b8f84efa8700e499" alt="ifflogo" style="height: 80px; width: auto;">
-        </div>
-        <span class="system-title">Sistema de Eventos</span>
-      </div>
-      <div class="header-right">
-        <a href="login.php" class="btn-logout">
-          <i class="fa-solid fa-right-from-bracket"></i>
-          <span>Logout</span>
-        </a>
-      </div>
-    </header>
-
-    <main class="main-content">
+  <div class="main-content">
+    <main class="main-content" style="padding:0;">
       <div class="page-header">
         <h1>Mural de Eventos</h1>
         <p>Explore e se inscreva nos eventos disponíveis</p>
@@ -108,7 +116,7 @@ try {
               </div>
               <span class="event-badge">—</span>
             </div>
-            <p class="event-description">Ainda não há eventos cadastrados.</p>
+            <p class="event-description">Ainda não há eventos abertos para inscrição.</p>
           </div>
         <?php else: ?>
           <?php foreach ($events as $ev): 
@@ -134,22 +142,10 @@ try {
             </div>
             <p class="event-description"><?php echo $descricao; ?></p>
             <div class="event-details">
-              <div class="event-detail">
-                <i class="fa-solid fa-calendar"></i>
-                <span><?php echo $dateText; ?></span>
-              </div>
-              <div class="event-detail">
-                <i class="fa-solid fa-location-dot"></i>
-                <span><?php echo $local; ?></span>
-              </div>
-              <div class="event-detail">
-                <i class="fa-solid fa-users"></i>
-                <span><span class="inscritos-count" data-event-id="<?php echo $eventId; ?>"><?php echo $inscritos; ?></span> inscritos</span>
-              </div>
-              <div class="event-detail">
-                <i class="fa-solid fa-clock"></i>
-                <span><?php echo $carga; ?> h</span>
-              </div>
+              <div class="event-detail"><i class="fa-solid fa-calendar"></i><span><?php echo $dateText; ?></span></div>
+              <div class="event-detail"><i class="fa-solid fa-location-dot"></i><span><?php echo $local; ?></span></div>
+              <div class="event-detail"><i class="fa-solid fa-users"></i><span><span class="inscritos-count" data-event-id="<?php echo $eventId; ?>"><?php echo $inscritos; ?></span> inscritos</span></div>
+              <div class="event-detail"><i class="fa-solid fa-clock"></i><span><?php echo $carga; ?> h</span></div>
             </div>
             <button id="btn-inscrever-<?php echo $eventId; ?>" class="btn-inscrever" onclick="inscrever(<?php echo $eventId; ?>)">Inscrever-se</button>
           </div>

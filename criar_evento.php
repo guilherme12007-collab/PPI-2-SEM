@@ -26,7 +26,7 @@ $data_inicio   = trim($_POST['data_inicio'] ?? '');
 $data_fim      = trim($_POST['data_fim'] ?? '');
 $local         = trim($_POST['local'] ?? '');
 $carga_horaria = $_POST['carga_horaria'] ?? null;
-$status        = trim($_POST['status'] ?? 'Aberto');
+$status        = trim($_POST['status'] ?? 'Pendente');
 
 // Validação mínima
 if ($titulo === '') respondError('Título é obrigatório.');

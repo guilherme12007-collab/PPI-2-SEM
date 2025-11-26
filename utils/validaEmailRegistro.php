@@ -6,12 +6,10 @@ function determineProfileAndValidateDomain(string $email): ?string {
     }
     $domain = $parts[1];
 
-    if ($domain === 'iffarroupilha.edu.br') {
+    if ($domain === 'iffarroupilha.edu.br' || $domain === 'iffar.edu.br') {
         return 'Organizador'; // Professor/Organizador
-    } elseif ($domain === 'aluno.iffar.edu.br') {
+    } else{
         return 'Participante'; // Aluno/Participante
-    } else {
-        return null; // Domínio não permitido
     }
 }
 

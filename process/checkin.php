@@ -5,6 +5,14 @@ date_default_timezone_set('America/Sao_Paulo');
 
 header('Content-Type: application/json; charset=utf-8');
 
+// Lista de endereços IP públicos permitidos para realizar check-in e check-out.
+$allowed_ips = [
+    '127.0.0.1', // IP para testes locais (desenvolvimento)
+    '::1',       // IP para testes locais (desenvolvimento, IPv6)
+    // --- Adicione aqui os IPs públicos da sua empresa ---
+    // Ex: '203.0.113.1', '198.51.100.54'
+];
+
 ob_start();
 require_once __DIR__ . '/../Database.php';
 $require_output = ob_get_clean();
@@ -31,18 +39,23 @@ if (empty($_SESSION['id_usuario'])) {
     exit;
 }
 
-// função simples para registrar IP detectado (não usada para permitir/neg ar)
-function getClientIpRaw() {
-    if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-        $parts = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
-        return trim(end($parts)); // último proxy mais próximo do servidor
-    }
-    if (!empty($_SERVER['HTTP_CLIENT_IP'])) return $_SERVER['HTTP_CLIENT_IP'];
-    return $_SERVER['REMOTE_ADDR'] ?? '';
+// Função para obter o endereço IP do cliente, priorizando o REMOTE_ADDR.
+function getClientIp() {
+    // Utiliza o IP de conexão direta do cliente.
+    $ip = $_SERVER['REMOTE_ADDR'] ?? '';
+    return $ip;
 }
 
-$clientIpRaw = getClientIpRaw();
+$clientIp = getClientIp();
 $userId = (int) $_SESSION['id_usuario'];
+
+// Verifica se o IP do cliente está na lista de IPs permitidos.
+if (!in_array($clientIp, $allowed_ips, true)) {
+    http_response_code(403); // Forbidden
+    // Retorna uma mensagem de erro clara para o usuário.
+    echo json_encode(['error' => 'Acesso negado. Você só pode realizar esta operação a partir de uma rede autorizada.']);
+    exit;
+}
 
 try {
     $pdo = getDbConnection();
@@ -105,7 +118,7 @@ try {
                 ':iid' => $id_inscricao,
                 ':dr'  => $today,
                 ':he'  => $now,
-                ':ipe' => $clientIpRaw
+                ':ipe' => $clientIp
             ]);
             echo json_encode(['success' => true, 'message' => 'Check-in realizado', 'hora' => $now]);
             exit;
@@ -144,7 +157,7 @@ try {
     ");
     $upd->execute([
         ':hs'  => $now,
-        ':ips' => $clientIpRaw,
+        ':ips' => $clientIp,
         ':pid' => (int)$row['id_presenca']
     ]);
 

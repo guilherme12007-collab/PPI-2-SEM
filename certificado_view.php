@@ -10,11 +10,16 @@ if (empty($_SESSION['id_usuario'])) {
 $hash = trim((string)($_GET['hash'] ?? ''));
 if ($hash === '') { http_response_code(400); echo 'Hash inválido'; exit; }
 
-$uid = (int)$_SESSION['id_usuario'];
+function isOrganizador(): bool {
+    $tipo = $_SESSION['tipo_perfil'] ?? $_SESSION['perfil'] ?? null;
+    return !empty($tipo) && mb_strtolower(trim((string)$tipo),'UTF-8') === 'organizador';
+}
 
 try {
     $pdo = getDbConnection();
-    $stmt = $pdo->prepare("
+    $is_org = isOrganizador();
+    
+    $sql = "
         SELECT c.id_certificado, c.caminho_arquivo, c.data_emissao,
                u.nome AS participante, e.titulo AS evento, COALESCE(e.carga_horaria::text, '') AS carga_horaria,
                c.codigo_hash
@@ -22,17 +27,27 @@ try {
         JOIN inscricao i ON c.id_inscricao = i.id_inscricao
         JOIN usuario u ON i.id_usuario = u.id_usuario
         JOIN evento e ON i.id_evento = e.id_evento
-        WHERE c.codigo_hash = :h AND i.id_usuario = :uid
-        LIMIT 1
-    ");
-    $stmt->execute([':h' => $hash, ':uid' => $uid]);
+        WHERE c.codigo_hash = :h ";
+
+    $params = [':h' => $hash];
+    if (!$is_org) {
+        $sql .= " AND i.id_usuario = :uid ";
+        $params[':uid'] = (int)$_SESSION['id_usuario'];
+    }
+    $sql .= " LIMIT 1";
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
     if (!$row) { http_response_code(404); echo 'Certificado não encontrado ou sem permissão.'; exit; }
 } catch (Exception $e) {
-    http_response_code(500); echo 'Erro ao consultar certificado.'; exit;
+    http_response_code(500);
+    // Para depuração: exibe o erro real. Em produção, isso deve ser registrado em um arquivo de log.
+    error_log('Erro na consulta do certificado: ' . $e->getMessage()); // Loga o erro no servidor
+    die('Erro ao consultar certificado: ' . htmlspecialchars($e->getMessage()));
 }
 
-$fileUrl = 'process/certificados/render_pdf.php?hash=' . urlencode($hash);
+$fileUrl = 'process/certificados/render_pdf.php?hash=' . urlencode($hash) . '&force=1';
 $participant = htmlspecialchars($row['participante'] ?? '', ENT_QUOTES, 'UTF-8');
 $eventTitle = htmlspecialchars($row['evento'] ?? '', ENT_QUOTES, 'UTF-8');
 $carga = htmlspecialchars($row['carga_horaria'] ?? '', ENT_QUOTES, 'UTF-8');

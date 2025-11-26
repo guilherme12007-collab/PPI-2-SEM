@@ -24,6 +24,14 @@ function gerarCodigoHash(int $id_inscricao = 0, int $id_evento = 0): string {
     return strtoupper(hash_hmac('sha256', $payload, $salt));
 }
 
+// try to load Composer autoload (for TCPDF)
+$composerAutoload = __DIR__ . '/vendor/autoload.php';
+$tcpdfAvailable = false;
+if (file_exists($composerAutoload)) {
+    require_once $composerAutoload;
+    $tcpdfAvailable = class_exists('TCPDF');
+}
+
 if (isset($_GET['action'])) {
     header('Content-Type: application/json; charset=utf-8');
 
@@ -135,12 +143,39 @@ if (isset($_GET['action'])) {
             exit;
         }
 
-        $body = json_decode(file_get_contents('php://input'), true);
-        $ids = is_array($body['ids'] ?? null) ? $body['ids'] : [];
+        // Alterado para suportar multipart/form-data (upload de arquivo)
+        $ids = is_array($_POST['ids'] ?? null) ? $_POST['ids'] : [];
         if (empty($ids)) {
             http_response_code(400);
             echo json_encode(['error' => 'bad_request', 'reason' => 'ids_obrigatorios']);
             exit;
+        }
+
+        $id_imagem_fundo = null;
+        $imagem_fundo_conteudo = null; // Para usar na geração do PDF
+        if (isset($_FILES['background']) && $_FILES['background']['error'] === UPLOAD_ERR_OK) {
+            // Validação de segurança básica
+            $finfo = new finfo(FILEINFO_MIME_TYPE);
+            $mime = $finfo->file($_FILES['background']['tmp_name']);
+            if (in_array($mime, ['image/jpeg', 'image/png'])) {
+                $imagem_fundo_conteudo = file_get_contents($_FILES['background']['tmp_name']);
+                $nome_arquivo_unico = 'bg_' . time() . '_' . bin2hex(random_bytes(12)) . ($mime === 'image/jpeg' ? '.jpg' : '.png');
+
+                try {
+                    $stmtImg = $pdo->prepare(
+                        "INSERT INTO certificado_imagem_fundo (nome_arquivo_unico, conteudo_imagem) VALUES (:nome, :conteudo) RETURNING id_imagem_fundo"
+                    );
+                    $stmtImg->bindParam(':nome', $nome_arquivo_unico, PDO::PARAM_STR);
+                    $stmtImg->bindParam(':conteudo', $imagem_fundo_conteudo, PDO::PARAM_LOB);
+                    $stmtImg->execute();
+                    $resultImg = $stmtImg->fetch(PDO::FETCH_ASSOC);
+                    if ($resultImg && isset($resultImg['id_imagem_fundo'])) {
+                        $id_imagem_fundo = (int)$resultImg['id_imagem_fundo'];
+                    }
+                } catch (Exception $imgEx) {
+                    // Falha ao salvar a imagem, mas pode continuar sem ela
+                }
+            }
         }
 
         $results = [];
@@ -153,7 +188,7 @@ if (isset($_GET['action'])) {
 
             try {
                 $stmt = $pdo->prepare("
-                  SELECT i.id_evento, u.nome, u.email, e.titulo,
+                  SELECT i.id_evento, u.nome, u.email, e.titulo, COALESCE(e.carga_horaria::text,'') AS carga_horaria,
                     COALESCE(p.presencas,0) AS presencas,
                     GREATEST(1, ((EXTRACT(epoch FROM (COALESCE(e.data_fim,e.data_inicio)::timestamp - e.data_inicio::timestamp)) / 86400)::int + 1)) AS total_dias,
                     ROUND((COALESCE(p.presencas,0)::numeric / GREATEST(1, ((EXTRACT(epoch FROM (COALESCE(e.data_fim,e.data_inicio)::timestamp - e.data_inicio::timestamp)) / 86400)::int + 1)))*100, 2) AS pct
@@ -176,14 +211,14 @@ if (isset($_GET['action'])) {
                 }
 
                 $pct = (float)($row['pct'] ?? 0.0);
-                if (!($pct >= 70.0 && $pct <= 75.0)) {
+                if ($pct < 70.0) {
                     $results[] = [
                         'id_inscricao' => $id_inscricao,
                         'nome' => $row['nome'],
                         'email' => $row['email'],
                         'pct' => $pct,
                         'status' => 'skipped',
-                        'reason' => 'percentual_fora_intervalo_70_75'
+                        'reason' => 'percentual_inferior_a_70'
                     ];
                     continue;
                 }
@@ -191,17 +226,19 @@ if (isset($_GET['action'])) {
                 $id_evento = (int)$row['id_evento'];
                 $nome = $row['nome'];
                 $email = $row['email'];
+                $titulo_evento = $row['titulo'];
+                $carga_horaria = $row['carga_horaria'];
 
                 $codigo_rastreio = gerarCodigoRastreio($id_inscricao, $id_evento);
                 $codigo_hash = gerarCodigoHash($id_inscricao, $id_evento);
 
                 $sqlUpsert = "
                   INSERT INTO certificado (
-                    id_inscricao, id_evento, nome_participante, email_participante,
+                    id_inscricao, id_evento, nome_participante, email_participante, id_imagem_fundo,
                     data_emissao, codigo_rastreio, codigo_hash, caminho_arquivo, status_validacao
                   ) VALUES (
-                    :id_inscricao, :id_evento, :nome_participante, :email_participante,
-                    NOW(), :codigo_rastreio, :codigo_hash, NULL, :status_validacao
+                    :id_inscricao, :id_evento, :nome_participante, :email_participante, :id_imagem_fundo,
+                    NOW(), :codigo_rastreio, :codigo_hash, :caminho_arquivo, 'PENDENTE'
                   )
                   ON CONFLICT (id_inscricao) DO UPDATE
                     SET id_evento = EXCLUDED.id_evento,
@@ -210,20 +247,23 @@ if (isset($_GET['action'])) {
                         data_emissao = EXCLUDED.data_emissao,
                         codigo_rastreio = EXCLUDED.codigo_rastreio,
                         codigo_hash = EXCLUDED.codigo_hash,
-                        caminho_arquivo = EXCLUDED.caminho_arquivo,
-                        status_validacao = EXCLUDED.status_validacao
+                        id_imagem_fundo = EXCLUDED.id_imagem_fundo,
+                        caminho_arquivo = '', -- Define um valor temporário para evitar erro de NOT NULL
+                        status_validacao = 'PENDENTE'
                   RETURNING id_certificado
                 ";
                 $stmt2 = $pdo->prepare($sqlUpsert);
-                $stmt2->execute([
+                $params = [
                     ':id_inscricao' => $id_inscricao,
                     ':id_evento' => $id_evento,
                     ':nome_participante' => $nome,
                     ':email_participante' => $email,
                     ':codigo_rastreio' => $codigo_rastreio,
                     ':codigo_hash' => $codigo_hash,
-                    ':status_validacao' => 'PENDENTE'
-                ]);
+                    ':caminho_arquivo' => null,
+                    ':id_imagem_fundo' => $id_imagem_fundo
+                ];
+                $stmt2->execute($params);
 
                 // ler o RETURNING de forma robusta
                 $returned = $stmt2->fetch(PDO::FETCH_ASSOC);
@@ -243,11 +283,16 @@ if (isset($_GET['action'])) {
                     continue;
                 }
 
+                // O caminho do arquivo não é mais gerado aqui,
+                // apenas o caminho da imagem de fundo (se houver) é salvo no banco.
+                // A geração do PDF ocorrerá em render_pdf.php.
+                $pdfRelative = ''; // Não há mais caminho de PDF para salvar.
+
                 $results[] = [
                     'id_inscricao' => $id_inscricao,
                     'id_certificado' => $id_cert,
-                    'codigo_rastreio' => $codigo_rastreio,
                     'codigo_hash' => $codigo_hash,
+                    'caminho_arquivo' => $pdfRelative,
                     'nome' => $nome,
                     'email' => $email,
                     'pct' => $pct,
@@ -310,15 +355,26 @@ if (isset($_GET['action'])) {
         <li><a href="index_organizador.php"><i class="fa-solid fa-chart-line"></i> Dashboard</a></li>
         <li><a href="eventosADM.php"><i class="fa-solid fa-calendar-days"></i> Eventos</a></li>
         <a href="inscritos.php"><i class="fa-solid fa-users"></i> Inscritos</a>
-        <li class="active"><a href="certificados.php" aria-current="page"><i class="fa-solid fa-certificate"></i> Certificados</a></li>
-        <li><a href="#"><i class="fa-solid fa-gear"></i> Configurações</a></li>
+        <li class="active"><a href="certificados.php"><i class="fa-solid fa-certificate"></i> Certificados</a></li>
+        <li><a href="inscrever_organizador.php"><i class="fa-solid fa-pen-to-square"></i>Inscrever-se</a></li>
       </ul>
     </nav>
   </div>
 
   <div class="main-content">
+    <header class="top-bar" style="display:flex; justify-content:flex-end; padding: 24px 0; gap: 1rem;">
+        <div class="flex items-center gap-3 ml-auto">
+            <a href="perfil_organizador.php" title="Meu Perfil" class="text-gray-600 hover:text-green-600"><i class="fa-solid fa-user fa-lg"></i></a>
+            <a href="login.php" title="Sair" class="text-gray-600 hover:text-red-600"><i class="fa-solid fa-sign-out-alt fa-lg"></i></a>
+        </div>
+    </header>
+
     <h1 style="color:#125c2b;font-size:1.8rem;margin-bottom:0.25rem;font-weight:700">Certificados</h1>
     <p style="color:#666;margin-bottom:1rem">Grave os dados necessários para que o inscrito gere o certificado em seu navegador posteriormente.</p>
+
+    <!-- A área de output foi movida para cá -->
+    <div id="output" style="display:none;margin-bottom:1rem;padding:1rem;border-radius:0.5rem;background-color: #f3f4f6;border: 1px solid #e5e7eb;">
+    </div>
 
     <div class="panel">
       <div class="controls">
@@ -372,7 +428,7 @@ if (isset($_GET['action'])) {
   <div id="output" style="display:none;margin-top:12px;padding:10px;border-radius:6px;background:#fff;max-width:980px;"></div>
   
   <!-- no head/footer mantenha HTML existente; apenas substitua o bloco de script por este: -->
-  <script>
+  <script> // ATENÇÃO: O endpoint de emissão foi alterado para o próprio certificados.php
 document.addEventListener('DOMContentLoaded', function () {
   const eventSelect = document.getElementById('eventSelect');
   const lista = document.getElementById('lista');
@@ -424,19 +480,30 @@ document.addEventListener('DOMContentLoaded', function () {
       const json = await res.json();
       if(json.error){ lista.innerHTML = '<p>Erro: '+json.error+'</p>'; return; }
       const rows = json.data || [];
-      if(!rows.length){ lista.innerHTML = '<p>Nenhum inscrito.</p>'; return; }
-      let html = '<table><thead><tr><th><input id="chkAll" type="checkbox"></th><th>Participante</th><th>Email</th><th>Presenças</th><th>%</th></tr></thead><tbody>';
+      if(!rows.length){ lista.innerHTML = '<p style="color:#6b7280">Nenhum inscrito encontrado para este evento.</p>'; return; }
+      
+      let html = `<div class="overflow-x-auto border border-gray-200 rounded-lg">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th scope="col" class="px-6 py-3 text-center w-12"><input id="chkAll" type="checkbox"></th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Participante</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Presenças</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">% Frequência</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">`;
       rows.forEach(r=>{
-        html += `<tr>
-          <td><input type="checkbox" name="ids[]" value="${r.id_inscricao}"></td>
-          <td>${escapeHtml(r.nome)}</td>
-          <td>${escapeHtml(r.email)}</td>
-          <td>${r.presencas}</td>
-          <td>${r.pct}%</td>
+        html += `<tr class="hover:bg-gray-50">
+          <td class="px-6 py-4 whitespace-nowrap text-center"><input type="checkbox" name="ids[]" value="${r.id_inscricao}" class="h-4 w-4 text-indigo-600 border-gray-300 rounded"></td>
+          <td class="px-6 py-4 whitespace-nowrap"><div class="text-sm font-medium text-gray-900">${escapeHtml(r.nome)}</div><div class="text-sm text-gray-500">${escapeHtml(r.email)}</div></td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${r.presencas}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${r.pct}%</td>
         </tr>`;
       });
-      html += '</tbody></table>';
+      html += '</tbody></table></div>';
       lista.innerHTML = html;
+
       const chkAll = document.getElementById('chkAll');
       if (chkAll) {
         chkAll.addEventListener('change', e=>{
@@ -469,17 +536,27 @@ document.addEventListener('DOMContentLoaded', function () {
             issuedList.innerHTML = '<p>Nenhum certificado emitido encontrado para este filtro.</p>';
             return;
         }
-        let html = '<table><thead><tr><th>Participante</th><th>Evento</th><th>Data Emissão</th><th>Ações</th></tr></thead><tbody>';
+        let html = `<div class="overflow-x-auto border border-gray-200 rounded-lg">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Participante</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Evento</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data Emissão</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">`;
         rows.forEach(c => {
             const dataEmissao = new Date(c.data_emissao).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
-            html += `<tr>
-                <td>${escapeHtml(c.nome_participante)}<br><small class="muted">${escapeHtml(c.email_participante)}</small></td>
-                <td>${escapeHtml(c.evento_titulo)}</td>
-                <td>${dataEmissao}</td>
-                <td><a href="validar_certificado.php?hash=${c.codigo_hash}" target="_blank" class="link">Verificar</a></td>
+            html += `<tr class="hover:bg-gray-50">
+                <td class="px-6 py-4 whitespace-nowrap"><div class="text-sm font-medium text-gray-900">${escapeHtml(c.nome_participante)}</div><div class="text-sm text-gray-500">${escapeHtml(c.email_participante)}</div></td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${escapeHtml(c.evento_titulo)}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${dataEmissao}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium"><a href="certificado_view.php?hash=${c.codigo_hash}" target="_blank" class="text-indigo-600 hover:text-indigo-900">Visualizar</a></td>
             </tr>`;
         });
-        html += '</tbody></table>';
+        html += '</tbody></table></div>';
         issuedList.innerHTML = html;
         issuedTotal.textContent = `Total: ${rows.length} certificado(s) emitido(s).`;
     } catch (err) {
@@ -536,19 +613,36 @@ document.addEventListener('DOMContentLoaded', function () {
     if(!selected.length){ alert('Selecione ao menos um inscrito.'); return; }
 
     const form = new FormData();
-    const payload = { ids: selected };
+    // Adiciona os IDs selecionados ao FormData.
+    // O PHP irá recebê-los como um array $_POST['ids']
+    selected.forEach(id => {
+      form.append('ids[]', id);
+    });
+
+    // Adiciona o arquivo de imagem, se um foi selecionado
+    if (bgFile.files[0]) {
+      form.append('background', bgFile.files[0]);
+    }
 
     output.style.display='block';
     output.textContent = 'Processando...';
     confirmEmitBtn.disabled = true;
 
     try {
-      const res = await fetch('process/certificados/emit_lote.php', { method: 'POST', body: form });
+      const res = await fetch('?action=emit_lote', { method: 'POST', body: form });
       const json = await res.json();
+      console.log('Resposta detalhada do servidor:', json); // Log detalhado no console
+
       // não imprimir o JSON cru do banco — mostrar mensagem amigável
       if (json && json.success) {
         output.innerHTML = '<div style="color:green">Certificados emitidos com sucesso.</div>';
+        // Opcional: mostrar detalhes dos resultados
+        if (json.results && json.results.length) {
+            const savedCount = json.results.filter(r => r.status === 'saved').length;
+            output.innerHTML += `<br>${savedCount} de ${json.results.length} certificados foram processados.`;
+        }
       } else {
+        console.error('Falha na emissão:', json);
         output.innerHTML = '<div style="color:orange">Processamento concluído com avisos. Verifique logs do servidor.</div>';
       }
     } catch (err) {

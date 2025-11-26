@@ -1,5 +1,14 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 require_once 'Database.php';
+
+// Garante que apenas usuários logados (e que são organizadores) acessem.
+if (empty($_SESSION['id_usuario'])) {
+    header('Location: login.php'); // Redireciona para o login se não estiver logado
+    exit;
+}
 
 $pdo = getDbConnection();
 
@@ -8,14 +17,16 @@ $search = isset($_GET['q']) ? trim($_GET['q']) : '';
 $page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
 $perPage = 12;
 $offset = ($page - 1) * $perPage;
+$id_organizador = (int)$_SESSION['id_usuario'];
 
 try {
     // Consulta para total (com filtro de busca)
     if ($search !== '') {
-        $countStmt = $pdo->prepare("SELECT COUNT(*) AS total FROM evento WHERE titulo ILIKE :q OR descricao ILIKE :q");
-        $countStmt->execute([':q' => "%$search%"]);
+        $countStmt = $pdo->prepare("SELECT COUNT(*) AS total FROM evento WHERE id_organizador = :id_org AND (titulo ILIKE :q OR descricao ILIKE :q)");
+        $countStmt->execute([':id_org' => $id_organizador, ':q' => "%$search%"]);
     } else {
-        $countStmt = $pdo->query("SELECT COUNT(*) AS total FROM evento");
+        $countStmt = $pdo->prepare("SELECT COUNT(*) AS total FROM evento WHERE id_organizador = :id_org");
+        $countStmt->execute([':id_org' => $id_organizador]);
     }
     $total = (int) ($countStmt->fetch()['total'] ?? 0);
 
@@ -30,10 +41,11 @@ try {
                 FROM inscricao
                 GROUP BY id_evento
             ) i ON i.id_evento = e.id_evento
-            WHERE e.titulo ILIKE :q OR e.descricao ILIKE :q
+            WHERE e.id_organizador = :id_org AND (e.titulo ILIKE :q OR e.descricao ILIKE :q)
             ORDER BY e.data_inicio DESC
             LIMIT :limit OFFSET :offset
         ");
+        $stmt->bindValue(':id_org', $id_organizador, PDO::PARAM_INT);
         $stmt->bindValue(':q', "%$search%", PDO::PARAM_STR);
     } else {
         $stmt = $pdo->prepare("
@@ -45,9 +57,11 @@ try {
                 FROM inscricao
                 GROUP BY id_evento
             ) i ON i.id_evento = e.id_evento
+            WHERE e.id_organizador = :id_org
             ORDER BY e.data_inicio DESC
             LIMIT :limit OFFSET :offset
         ");
+        $stmt->bindValue(':id_org', $id_organizador, PDO::PARAM_INT);
     }
 
     $stmt->bindValue(':limit', (int)$perPage, PDO::PARAM_INT);
@@ -83,6 +97,13 @@ function formatPeriodo($inicio, $fim) {
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="assets/css/eventosADM.CSS">
+    <style>
+        .pausar-btn {
+            background-color: #f97316; /* orange-500 */
+            color: white;
+            padding: 4px 10px; border-radius: 4px; font-size: 0.8rem;
+        }
+    </style>
 </head>
 
 <body>
@@ -94,8 +115,8 @@ function formatPeriodo($inicio, $fim) {
                     <li><a href="index_organizador.php"><i class="fa-solid fa-chart-line"></i>Dashboard</a></li>
                     <li class="active"><a href="eventosADM.php"><i class="fa-solid fa-calendar-days"></i>Eventos</a></li>
                     <li><a href="inscritos.php"><i class="fa-solid fa-users"></i> Inscritos</a></li>
-                    <li><a href="certificados.php" aria-current="page"><i class="fa-solid fa-certificate"></i>&nbsp;Certificados</a></li>
-                    <li><a href="#"><i class="fa-solid fa-gear"></i>Configurações</a></li>
+                    <li><a href="certificados.php"><i class="fa-solid fa-certificate"></i>&nbsp;Certificados</a></li>
+                    <li><a href="inscrever_organizador.php"><i class="fa-solid fa-pen-to-square"></i>Inscrever-se</a></li>
                 </ul>
             </nav>
         </aside>
@@ -105,8 +126,12 @@ function formatPeriodo($inicio, $fim) {
                     <input type="text" name="q" value="<?= htmlspecialchars($search) ?>" class="search-input" placeholder="Buscar eventos...">
                     <button type="submit" class="novo-evento-btn">Buscar</button>
                 </form>
-                <div style="margin-left:auto;">
+                <div class="flex items-center gap-4 ml-auto">
                     <a href="cadastrar-evento.html" class="novo-evento-btn">+ Novo Evento</a>
+                    <div class="flex items-center gap-3">
+                        <a href="perfil_organizador.php" title="Meu Perfil" class="text-gray-600 hover:text-green-600"><i class="fa-solid fa-user fa-lg"></i></a>
+                        <a href="login.php" title="Sair" class="text-gray-600 hover:text-red-600"><i class="fa-solid fa-sign-out-alt fa-lg"></i></a>
+                    </div>
                 </div>
             </header>
             <section class="eventos-section">
@@ -130,7 +155,16 @@ function formatPeriodo($inicio, $fim) {
                         <?php foreach ($eventos as $ev): ?>
                             <?php
                                 $status = trim((string)$ev['status']);
-                                $isAtivo = ($status === '1' || strcasecmp($status, 'ativo') === 0);
+                                $statusClasse = 'programado'; // cinza (padrão)
+                                $statusTexto = ucfirst(strtolower($status));
+
+                                if (strcasecmp($status, 'Aberto') === 0) {
+                                    $statusClasse = 'ativo'; // verde
+                                    $statusTexto = 'Aprovado';
+                                } elseif (strcasecmp($status, 'Pendente') === 0) {
+                                    $statusClasse = 'pendente'; // amarelo
+                                }
+
                                 $periodo = formatPeriodo($ev['data_inicio'], $ev['data_fim']);
                             ?>
                             <div class="evento-card">
@@ -141,12 +175,19 @@ function formatPeriodo($inicio, $fim) {
                                     <span>Inscritos: <?= (int)$ev['inscritos'] ?></span>
                                 </div>
 
-                                <div class="evento-status <?= $isAtivo ? 'ativo' : 'programado' ?>">
-                                    <?= $isAtivo ? 'Ativo' : 'Programado' ?>
+                                <div class="evento-status <?= $statusClasse ?>">
+                                    <?= htmlspecialchars($statusTexto) ?>
                                 </div>
 
                                 <div class="evento-actions" aria-hidden="true">
-                                    <form method="post" action="process/eventos_delete.php" style="display:inline-block" onsubmit="return confirm('Confirma exclusão deste evento?');">
+                                    <?php if (strcasecmp($status, 'Aberto') === 0): ?>
+                                        <form method="post" action="process/pause_event.php" style="display:inline-block" onsubmit="return confirm('Tem certeza que deseja pausar este evento? Isso o marcará como \'Encerrado\' e impedirá novas inscrições.');">
+                                            <input type="hidden" name="id_evento" value="<?= (int)$ev['id_evento'] ?>">
+                                            <button type="submit" class="pausar-btn">Pausar</button>
+                                        </form>
+                                    <?php endif; ?>
+
+                                    <form method="post" action="process/eventos_delete.php" style="display:inline-block; margin-left: 8px;" onsubmit="return confirm('Confirma exclusão deste evento?');">
                                         <input type="hidden" name="id" value="<?= (int)$ev['id_evento'] ?>">
                                         <button type="submit" class="excluir-btn">Excluir</button>
                                     </form>

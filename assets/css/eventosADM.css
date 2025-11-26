@@ -1,3 +1,8 @@
+/* Adicionar ao final de eventosADM.CSS */
+.evento-status.pendente {
+    background-color: #f59e0b; /* amber-500 */
+    color: #fff;
+}
 body {
     background: #f6f6f6;
     font-family: 'Inter', Arial, sans-serif;

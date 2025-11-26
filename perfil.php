@@ -140,7 +140,7 @@ $tipo = $user['tipo_perfil'] ?? '';
                 <span class="system-title">Sistema de Eventos</span>
             </div>
             <div class="header-actions">
-                <a class="logout" href="process/logout.php"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+                <a class="logout" href="login.php"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
             </div>
         </header>
 

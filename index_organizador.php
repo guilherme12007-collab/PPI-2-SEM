@@ -79,7 +79,7 @@ try {
         <li><a href="eventosADM.php"><i class="fa-solid fa-calendar-days"></i>Eventos</a></li>
         <a href="inscritos.php"><i class="fa-solid fa-users"></i> Inscritos</a>
         <li><a href="certificados.php" aria-current="page"><i class="fa-solid fa-certificate"></i>&nbsp;Certificados</a></li>
-        <li><a href="#"><i class="fa-solid fa-gear"></i>Configurações</a></li>
+        <li><a href="inscrever_organizador.php"><i class="fa-solid fa-pen-to-square"></i>Inscrever-se</a></li>
         </ul>
       </nav>
   </div>

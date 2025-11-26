@@ -262,16 +262,16 @@ try {
                     <li><a href="eventosADM.php"><i class="fa-solid fa-calendar-days"></i>Eventos</a></li>
                     <li class="active"><a href="inscritos.php"><i class="fa-solid fa-users"></i> Inscritos</a></li>
                     <li><a href="certificados.php" aria-current="page"><i class="fa-solid fa-certificate"></i>&nbsp;Certificados</a></li>
-                    <li><a href="#"><i class="fa-solid fa-gear"></i>Configurações</a></li>
+                    <li><a href="inscrever_organizador.php"><i class="fa-solid fa-pen-to-square"></i>Inscrever-se</a></li>
                 </ul>
             </nav>
         </aside>
         <main class="main-content">
             <header class="top-bar">
-                <div class="settings">
-                    <span class="icon">&#9881;</span>
+                <div class="flex items-center gap-3 ml-auto">
+                    <a href="perfil_organizador.php" title="Meu Perfil" class="text-gray-600 hover:text-green-600"><i class="fa-solid fa-user fa-lg"></i></a>
+                    <a href="login.php" title="Sair" class="text-gray-600 hover:text-red-600"><i class="fa-solid fa-sign-out-alt fa-lg"></i></a>
                 </div>
-                <a href="login.php" class="logout-btn"><i class="fa-solid fa-sign-out-alt"></i> Sair</a>
             </header>
             <section class="eventos-section">
                 <div class="eventos-header">
