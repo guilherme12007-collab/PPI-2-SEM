@@ -191,10 +191,7 @@ function formatPeriodo($inicio, $fim) {
                                         </form>
                                     <?php endif; ?>
 
-                                    <form method="post" action="process/eventos_delete.php" style="display:inline-block; margin-left: 8px;" onsubmit="return confirm('Confirma exclusão deste evento?');">
-                                        <input type="hidden" name="id" value="<?= (int)$ev['id_evento'] ?>">
-                                        <button type="submit" class="excluir-btn">Excluir</button>
-                                    </form>
+
                                 </div>
                             </div>
                         <?php endforeach; ?>
